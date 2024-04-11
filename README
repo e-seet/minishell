@@ -1,0 +1,60 @@
+# Minishell Project
+
+## Requirements
+
+1. Display prompt when waiting for new command
+2. Working history
+3. Serve and launch the right executable [based on path variable / relative / absolute path]
+4. Avoid using more than 1 global variable [this is for signal only]
+5. Not interpret unclosed quotes or special characters which are not required by the subject such as \ (backslash) or ; (semicolon).
+6. Handle ’ (single quote) which should prevent the shell from interpreting the metacharacters in the quoted sequence.
+7. Handle " (double quote) which should prevent the shell from interpreting the metacharacters in the quoted sequence except for $ (dollar sign).
+8. Implement redirections:
+    1. < should redirect input.
+    2. > should redirect output.
+    3. << should be given a delimiter, then read the input until a line containing the delimiter is seen. However, it doesn’t have to update the history!
+    4. >> should redirect output in append mode.
+9. Implement pipes (| character). The output of each command in the pipeline is connected to the input of the next command via a pipe.
+10. Handle environment variables ($ followed by a sequence of characters) which should expand to their values.
+11. Handle $? which should expand to the exit status of the most recently executed foreground pipeline.
+12. Handle ctrl-C, ctrl-D and ctrl-\ which should behave like in bash.
+13. In interactive mode:
+    1. ctrl-C displays a new prompt on a new line.
+    2. ctrl-D exits the shell.
+    3. ctrl-\ does nothing.
+14. Your shell must implement the following builtins
+    1. echo with option -n
+    2. cd with only a relative or absolute path
+    3. pwd with no options
+    4. export with no options
+    5. unset with no options
+    6. env with no options or arguments
+    7. exit with no options
+
+The readline() function can cause memory leaks. You don’t have to fix them. But
+that doesn’t mean your own code, yes the code you wrote, can have memory
+leaks.
+
+## Conceptual
+
+To do:
+<https://www.cs.purdue.edu/homes/grr/SystemsProgrammingBook/Book/Chapter5-WritingYourOwnShell.pdf>
+
+## Macbook Running Command For dev
+
+1. Get ENTR
+2. find . -name "*.c" | entr make
+
+### Reference
+
+1. Main Knowledge Source
+<https://www.cs.purdue.edu/homes/grr/SystemsProgrammingBook/Book/Chapter5-WritingYourOwnShell.pdf>
+
+2. AST Meaning
+<https://en.wikipedia.org/wiki/Abstract_syntax_tree>
+
+3. Sample shell
+<https://github.com/Swoorup/mysh>
+
+4. RTFM
+<https://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html>
