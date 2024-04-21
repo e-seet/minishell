@@ -12,7 +12,7 @@ CFLAGS := -Wall -Wextra -Werror
 # **************************************************************************** #
 # Source
 # **************************************************************************** #
-SRC_FILES			:=	main.c	
+SRC_FILES			:=	main.c	./utils/lexical/lexical.c	./utils/parsing/parser.c setup.c
 OBJS				=	$(SRC_FILES:.c=.o)
 
 # **************************************************************************** #
@@ -28,18 +28,25 @@ SRC_FILESLIBFT		:=	ft_isalpha.c		ft_isdigit.c		ft_isalnum.c		ft_isascii.c		ft_is
 
 LIBFT_DIR			=	./libft/
 LIBFTSRC			=	$(addprefix $(LIBFT_DIR), $(SRC_FILESLIBFT))
-OBJ_LIBFT				=	$(LIBFTSRC:.c=.o)
+OBJ_LIBFT			=	$(LIBFTSRC:.c=.o)
 
+# **************************************************************************** #
+# Get_Next_Line
+# **************************************************************************** #
+SRC_FILES_GNL		:=	get_next_line.c		get_next_line_utils.c
+GNL_DIR				=	get_next_line/
+GNLSRC				=	$(addprefix $(GNL_DIR), $(SRC_FILES_GNL))
+OBJ_GNL				=	$(GNLSRC:.c=.o)
 
 # **************************************************************************** #
 # Rules
 # **************************************************************************** #
 .PHONY: all bonus clean fclean re
 
-$(NAME):	$(OBJ_LIBFT) $(OBJS)
-			@$(CC) $(OBJ_LIBFT) $(OBJS) -o $(NAME)
+$(NAME):	$(OBJ_LIBFT) $(OBJ_GNL)	$(OBJS)
+			@$(CC) $(OBJ_LIBFT) $(OBJ_GNL) $(OBJS) -o $(NAME)
 
-all: $(NAME)
+all: fclean $(NAME)
 
 $(OBJS): %.o: %.c
 	@$(CC) $(CFLAGS) -I $(LIBFT_DIR) -c $< -o $@
@@ -48,9 +55,13 @@ $(OBJS): %.o: %.c
 $(OBJ_LIBFT): %.o: %.c
 	@$(CC) $(CFLAGS) -c $< -o $@
 
+$(OBJ_GNL): %.o: %.c
+	@$(CC) $(CFLAGS) -c $< -o $@
+
 clean:
 	rm	-f	$(OBJS)
 	rm	-f	$(OBJ_LIBFT)
+	rm	-f	$(OBJ_GNL)
 
 fclean: clean
 	rm -f $(NAME)

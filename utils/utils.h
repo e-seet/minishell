@@ -2,6 +2,16 @@
 #ifndef UTILS_H
 # define UTILS_H
 
+#define RED "\033[1;31m";
+
+// libft
+# include "../libft/libft.h"
+// gnl
+# include "../get_next_line/get_next_line.h"
+
+// my structs that is required
+# include "struct.h"
+
 // libraries required
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -18,7 +28,16 @@
 #include <termios.h>
 #include <termcap.h>
 
-// libft
-# include "../../libft/libft.h"
+// lexical file
+void	lexical(char *str, char *envp[]);
+
+// program file
+void	program(char *envp[]);
+
+// parser file
+void	parser(char *str, char *envp[]);
+
+//setup
+void	setupstruct(struct s_minishell *t_minishell, char *envp[]);
 
 #endif
