@@ -29,13 +29,43 @@
 #include <termcap.h>
 
 // lexical file
-void	lexical(char *str, char *envp[]);
+void	lexical(char *str);
+
+// lexicalutils
+int	ft_is_output_redirect(char *str);
+int	ft_is_append_output_redirect(char *str);
+int	ft_is_input_redirect(char *str);
+int	ft_is_heredoc_redirect(char *str);
+int	ft_is_conditional_or(char *str);
+
+// lexicalutils2
+int	ft_is_pipe(char *str);
+int	ft_is_double_ampersand(char *str);
+int	ft_is_bracket1(char *str);
+int	ft_is_bracket2(char *str);
+
 
 // program file
 void	program(char *envp[]);
 
-// parser file
-void	parser(char *str, char *envp[]);
+// parser folder
+// nodeops
+struct AST_Node *ft_createNode(char **strs, int num);
+// parser
+void	parser(char **strs);
+// void	parser(char *str, char *envp[]);
+ 
+// left sub tree
+void	leftSubTree(struct AST_Node *rootnode, char **strs, int end);
+void	checkLeftSubTree(struct AST_Node *rootnode);
+void	inorderTraversal_L(struct AST_Node* root);
+
+// right sub tree
+void	rightSubTree(struct AST_Node *rootnode, char **strs, int start, int end);
+void checkRightSubTree(struct AST_Node *rootnode);
+void	leftSubTree2(struct AST_Node *rootnode, char **strs, int i, int end);
+
+
 
 //setup
 void	setupstruct(struct s_minishell *t_minishell, char *envp[]);

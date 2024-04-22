@@ -46,8 +46,9 @@ int	checkforexit(char *envp[])
 		else
 		{
 
+			
 			// 1. lexical
-			lexical(str, envp);
+			lexical(str);
 
 			//  2. do parsing and all you want to do here.
 			// Create fork and create the program

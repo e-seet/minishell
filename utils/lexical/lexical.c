@@ -12,127 +12,14 @@
 
 // Check for sepeartor, if found. Add to list.
 // > : ft_is_output_redirect
-// >> : ft_is_append_output
 // <  :ft_is_input_redirect
-// << ft_is_heredoc
+// >> : ft_is_append_output_redirect
+// << ft_is_heredoc_redirect
 // || ft_is_conditional_or
 // | ft_is_pipe
 // && ft_is_double_ampersand
 // ( ft_is_bracket1
 // ) ft_is_bracket2
-
-int	ft_is_output_redirect(char *str)
-{
-	int	i;
-	
-	i = 0;
-	if (str[i] == '>')
-	{
-		return (1);
-	}
-	return (0);
-}
-
-int	ft_is_append_output(char *str)
-{
-	int	i;
-	
-	i = 0;
-	if (str[i] == '>' && str[i+1] == '>')
-	{
-		return (1);
-	}
-	return (0);
-}
-
-int	ft_is_input_redirect(char *str)
-{
-	int	i;
-	
-	i = 0;
-	if (str[i] == '<')
-	{
-		return (1);
-	}
-	return (0);
-}
-
-int	ft_is_heredoc(char *str)
-{
-	int	i;
-	
-	i = 0;
-	if (str[i] == '<' && str[i+1] == '<')
-	{
-		return (1);
-	}
-	return (0);
-}
-
-
-int	ft_is_conditional_or(char *str)
-{
-	int	i;
-	
-	i = 0;
-	if (str[i] == '|' && str[i+1] == '|')
-	{
-		return (1);
-	}
-	return (0);
-}
-
-
-int	ft_is_pipe(char *str)
-{
-	int	i;
-	
-	i = 0;
-	if (str[i] == '|')
-	{
-		return (1);
-	}
-	return (0);
-}
-
-int	ft_is_double_ampersand(char *str)
-{
-	int	i;
-	
-	i = 0;
-	if (str[i] == '&' && str[i + 1] == '&' )
-	{
-		return (1);
-	}
-	return (0);
-}
-
-
-// (
-int	ft_is_bracket1(char *str)
-{
-	int	i;
-	
-	i = 0;
-	if (str[i] == '(')
-	{
-		return (1);
-	}
-	return (0);
-}
-
-// )
-int	ft_is_bracket2(char *str)
-{
-	int	i;
-	
-	i = 0;
-	if (str[i] == ')')
-	{
-		return (1);
-	}
-	return (0);
-}
 
 char	**ft_breakup_str(char *str)
 {
@@ -149,13 +36,14 @@ char	**ft_breakup_str(char *str)
 	{
 		if
 		(
-			(ft_is_append_output(&str[i]) == 1)
-			|| (ft_is_heredoc(&str[i]) == 1) 
-			|| (ft_is_conditional_or(&str[i]) == 1)
-			|| (ft_is_double_ampersand(&str[i]) == 1)
+			(ft_is_append_output_redirect(&str[i]) == 1)
+			|| (ft_is_heredoc_redirect(&str[i]) == 1) 
+			// || (ft_is_conditional_or(&str[i]) == 1)
+			// || (ft_is_double_ampersand(&str[i]) == 1)
 		)
 		{
 			i = i + 2;
+			num++;
 			num++;
 		}
 		else if (
@@ -164,9 +52,10 @@ char	**ft_breakup_str(char *str)
 			|| (ft_is_pipe(&str[i]) == 1)
 			|| (ft_is_bracket1(&str[i]) == 1)
 			|| (ft_is_bracket2(&str[i]) == 1)
-			|| (ft_is_double_ampersand(&str[i]) == 1)
+			// || (ft_is_double_ampersand(&str[i]) == 1)
 		)
 		{
+			num++;
 			num++;
 			i ++;
 		}
@@ -177,61 +66,71 @@ char	**ft_breakup_str(char *str)
 	// asdasdas + sep + asdadas + sep + sadasd 
 	if (num > 1)
 	{
-		printf("number of strs to be calloc:%d\n", (num - 1) * 2);
-		strs = ft_calloc((num - 1) * 2, sizeof(char *));
+		printf("number of strs to be calloc:%d\n", num);
+		strs = ft_calloc(num, sizeof(char *));
 	}
 	else
 		strs = ft_calloc(num, sizeof(char *));
 
 
 	// copy all of the strs
-	int backupnum = (num - 1) * 2;
- 	i = 0;
+	int backupnum;
+
+	if (num != 0)
+		backupnum = num;
+ 	else
+		backupnum = 0;
+	i = 0;
 	num = 0;
 	while (str[i] != '\0')
 	{
+		// >> <<
 		if
 		(
-			(ft_is_append_output(&str[i]) == 1)
-			|| (ft_is_heredoc(&str[i]) == 1) 
-			|| (ft_is_conditional_or(&str[i]) == 1)
-			|| (ft_is_double_ampersand(&str[i]) == 1)
+			(ft_is_append_output_redirect(&str[i]) == 1)
+			|| (ft_is_heredoc_redirect(&str[i]) == 1) 
+			// || (ft_is_conditional_or(&str[i]) == 1)
+			// || (ft_is_double_ampersand(&str[i]) == 1)
 		)
 		{
+			// printf("double!\n%s\n", &str[i]);
 			// copying the word / str
-			strs[num] = ft_calloc(i-pos, sizeof(char));
+			strs[num] = ft_calloc(i-pos+1, sizeof(char));
 			ft_strlcpy(strs[num], &str[pos], i-pos+1);
-			printf("what have been copied for str: %s\n", strs[num]);
+			// printf("what have been copied for str: %s\n", strs[num]);
 			num ++;
 			pos = i;
 			i = i + 2;
 
 			// copying the seperator
-			strs[num] = ft_calloc(i-pos, sizeof(char));
+			strs[num] = ft_calloc(i-pos+1, sizeof(char));
 			ft_strlcpy(strs[num], &str[pos], i-pos+1);
-			printf("what have been copied for token: %s\n", strs[num]);
+			// printf("what have been copied for token: %s\n", strs[num]);
 			num ++;
 			pos = i;
 
 		}
+		// |, >, <, (, )
 		else if (
 			(ft_is_output_redirect(&str[i]) == 1)
 			|| (ft_is_input_redirect(&str[i]) == 1)
 			|| (ft_is_pipe(&str[i]) == 1)
 			|| (ft_is_bracket1(&str[i]) == 1)
 			|| (ft_is_bracket2(&str[i]) == 1)
-			|| (ft_is_double_ampersand(&str[i]) == 1)
+			// || (ft_is_double_ampersand(&str[i]) == 1)
 		)
 		{
-			strs[num] = ft_calloc(i-pos, sizeof(char));
+			// printf("single!%c\n%s\n",str[i], &str[i]);
+			
+			strs[num] = ft_calloc(i-pos+1, sizeof(char));
 			ft_strlcpy(strs[num], &str[pos], i-pos+1);
-			printf("what have been copied for str: %s\n", strs[num]);
+			// printf("what have been copied for str: %s\n", strs[num]);
 			num ++;
 			pos = i;
 			i ++;
-			strs[num] = ft_calloc(i-pos, sizeof(char));
+			strs[num] = ft_calloc(i-pos+1, sizeof(char));
 			ft_strlcpy(strs[num], &str[pos], i-pos+1);
-			printf("what have been copied for token: %s\n", strs[num]);
+			// printf("what have been copied for token: %s\n", strs[num]);
 			num ++;
 			pos = i;
 		}
@@ -243,17 +142,15 @@ char	**ft_breakup_str(char *str)
 	strs[num] = ft_calloc(i-pos, sizeof(char));
 	ft_strlcpy(strs[num], &str[pos], i-pos);
 
-	printf("formula num:%d, actual num:%d\n",  backupnum, num);
+	printf("Allocated spaces:%d, actual spaces:%d\n",  backupnum, num);
 
 	return strs;
 	// return NULL;
 }
 
 // Lexing: just split the input into tokens as you please and see useful for the parsing phase.
-void lexical(char *str, char *envp[])
+void lexical(char *str)
 {
-	printf("temp %p\n\n", envp[0]);
-
 	char **strs;
 
 	// parser(str, envp);	
@@ -261,48 +158,49 @@ void lexical(char *str, char *envp[])
 	
 	int i;
 	i = 0;
-
+	printf("print this if you want to know how it is seperated\n");
 	while (strs[i])
 	{
 		printf("number:%d str:%s\n", i, strs[i]);
 		i++;
 	}
 
-	// if (ft_strncmp(str, "echo", 4) == 0)
-	// {
-	// 	printf("echo stuff\n");
-	// }
-	// else if (ft_strncmp(str, "exit", 4) == 0)
-	// {
-	// 	printf("exit now!\n");
-	// }
-	// else if (ft_strncmp(str, "env", 3) == 0)
-	// {
-	// 	printf("to print out env or stuff");
-	// }
-	// else if (ft_strncmp(str, "export", 6) == 0)
-	// {
-	// 	printf("export\n");
-	// }
-	// else if (ft_strncmp(str, "unset", 5) == 0)
-	// {
-	// 	printf("unset env\n");
-
-	// }
-	// else if (ft_strncmp(str, "pwd", 3) == 0)
-	// {
-	// 	printf("get pwd\n");
-
-	// }
-	// else if (ft_strncmp(str, "cd", 2) == 0)
-	// {
-	// 	printf("cd\n");
-	// }
-
-	// // the rest are not built in. so we should handle it
-	// else
-	// {
-	// 	// other things
-	// }
-
+	parser(strs);
 }
+
+// if (ft_strncmp(str, "echo", 4) == 0)
+// {
+// 	printf("echo stuff\n");
+// }
+// else if (ft_strncmp(str, "exit", 4) == 0)
+// {
+// 	printf("exit now!\n");
+// }
+// else if (ft_strncmp(str, "env", 3) == 0)
+// {
+// 	printf("to print out env or stuff");
+// }
+// else if (ft_strncmp(str, "export", 6) == 0)
+// {
+// 	printf("export\n");
+// }
+// else if (ft_strncmp(str, "unset", 5) == 0)
+// {
+// 	printf("unset env\n");
+
+// }
+// else if (ft_strncmp(str, "pwd", 3) == 0)
+// {
+// 	printf("get pwd\n");
+
+// }
+// else if (ft_strncmp(str, "cd", 2) == 0)
+// {
+// 	printf("cd\n");
+// }
+
+// // the rest are not built in. so we should handle it
+// else
+// {
+// 	// other things
+// }

@@ -1,4 +1,4 @@
-#include "utils/utils.h"
+#include "utils.h"
 
 // find the long long path in envp.
 // returns a long string of paths
@@ -32,10 +32,20 @@ char	*findpath(char *envp[])
 
 void setupstruct(struct s_minishell *t_minishell, char *envp[])
 {
+	char *currpwd;
 
 	t_minishell->envp = envp;
 	t_minishell->path = findpath(envp);
 	t_minishell->paths = ft_split(t_minishell->path + 5, ':');
+	
+	currpwd = ft_calloc(1024, sizeof(char));
+
+
+	currpwd = getcwd(currpwd, 1024);
+	t_minishell->currpwd = currpwd;
+	if (!t_minishell->currpwd)
+		printf("error in getting curr pwd");
+	printf("curr pwd: %s", t_minishell->currpwd);
 
 	// print if required to know the content
 	// printf("path:%s\n\n", t_minishell->path);
