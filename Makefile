@@ -15,7 +15,10 @@ CFLAGS := -Wall -Wextra -Werror
 SRC_FILES			:=	main.c	./utils/setup.c \
 						./utils/lexical/lexical.c		./utils/lexical/lexicalutils.c	./utils/lexical/lexicalutils2.c \
 						./utils/parsing/parser.c		./utils/parsing/RightSubTree.c	./utils/parsing/nodeops.c \
-						./utils/parsing/LeftSubTree.c 
+						./utils/parsing/LeftSubTree.c \
+						./utils/commands.c \
+						./utils/cd.c\
+
 OBJS				=	$(SRC_FILES:.c=.o)
 
 # **************************************************************************** #

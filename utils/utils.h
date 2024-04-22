@@ -28,6 +28,11 @@
 #include <termios.h>
 #include <termcap.h>
 
+// extra: To check if allowed libraries
+#include <errno.h>
+#include <term.h>
+#include <curses.h>
+
 // lexical file
 void	lexical(char *str);
 
@@ -65,9 +70,14 @@ void	rightSubTree(struct AST_Node *rootnode, char **strs, int start, int end);
 void checkRightSubTree(struct AST_Node *rootnode);
 void	leftSubTree2(struct AST_Node *rootnode, char **strs, int i, int end);
 
-
-
 //setup
 void	setupstruct(struct s_minishell *t_minishell, char *envp[]);
+
+//commands
+void updatepwd(struct s_minishell *t_minishell);
+
+// change directory
+void changedirectory(char *str, struct s_minishell *t_minishell);
+
 
 #endif

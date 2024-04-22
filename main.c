@@ -23,11 +23,10 @@ int	checkforexit(char *envp[])
 	// char	*paths;
 	struct s_minishell *t_minishell;
 
-	t_minishell = ft_calloc(1, sizeof(t_minishell));
+	t_minishell = ft_calloc(1, sizeof(struct s_minishell));
 	
 	//setup 
 	setupstruct(t_minishell, envp);
-
 
 	printf("\033[1;31m\n");
 	str = NULL;
@@ -35,6 +34,8 @@ int	checkforexit(char *envp[])
 	{
 		write(1, "minishell> ", 11);
 		str = get_next_line(0);
+		
+		// check for exits.
 		if (str == NULL
 			|| ((ft_strncmp(str, "exit", ft_strlen(
 							"exit")) == 0) && (ft_strlen(str)
@@ -46,9 +47,41 @@ int	checkforexit(char *envp[])
 		else
 		{
 
-			
+			if (ft_strncmp(str, "env", ft_strlen("env")) == 0)
+			{
+				// if just env [Based off eval]
+				int i = 0;
+				while (t_minishell->envp[i])
+				{
+					printf("%s\n", t_minishell->envp[i]);
+					i++;
+				}
+				// if there are other commands EG:
+				// 1.Run command with modified env
+				// env VAR1=foo VAR2=bar command
+				// 2.Modify the env for shell session
+				// env Path=$PATH:/new/path
+				// 3.Print value of specific env
+				// env | grep PATH
+				// 4. execute command with clean env
+				// env -i command
+				// 5. setting env variable for a command
+				// env -u VAR1 -i VAR2=value command
+
+			}
+			else if (ft_strncmp(str, "pwd", ft_strlen("pwd")) ==0)
+			{
+				updatepwd(t_minishell);
+				printf("%s\n", t_minishell->currpwd);
+			}
+			else if (ft_strncmp(str, "cd", ft_strlen("cd")) ==0)
+			{
+				changedirectory(str, t_minishell);
+			}
+			// set,unset,export
+
 			// 1. lexical
-			lexical(str);
+			// lexical(str);
 
 			//  2. do parsing and all you want to do here.
 			// Create fork and create the program

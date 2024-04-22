@@ -29,15 +29,43 @@
     4. export with no options
     5. unset with no options
     6. env with no options or arguments
-    7. exit with no options	
+    7. exit with no options
 built in
 // echo
-// exit
-// env
+// exit [basic done]
+// env  [basic done]
 // export
 // unset
-// pwd
+// pwd [basic done]
 // cd
+
+set
+The set command is used to set and unset certain shell options and positional parameters. It can also be used to display the values of shell variables and functions.
+
+Displaying Variables: Running set alone without arguments will print a list of all shell variables and functions, including environment variables, in alphabetical order.
+
+Unset
+Used to remove vairables or functions from the environment of the shell
+unset VARIABLE_NAME / FUNCTION_NAME
+eg:
+myvar="Hello"
+echo $myvar  # Outputs Hello
+unset myvar
+echo $myvar  # Outputs nothing, myvar is unset
+
+Export:
+The export command is used to set environment variables that will be inherited by child processes started from the shell.
+
+Usage: To create or modify an environment variable and export it to the environment of subsequent commands, use export VARIABLE_NAME=value.
+eg:
+export PATH=$PATH:/usr/local/bin  # Adds /usr/local/bin to the PATH environment variable
+export NEW_VAR="Hello World"      # Creates a new environment variable and exports it
+
+TLDR:
+
+* Use set to configure shell behaviors and manipulate positional parameters. It's powerful but requires careful use, especially when changing shell options.
+* Use unset to clear variables or functions when they are no longer needed. This is useful for preventing unwanted behaviors due to lingering settings.
+* Use export to make sure sub-processes or child processes spawned by the script inherit certain environment variables. This is crucial for configuring the behavior of scripts and commands that depend on these variables.
 
 The readline() function can cause memory leaks. You don’t have to fix them. But
 that doesn’t mean your own code, yes the code you wrote, can have memory
@@ -100,43 +128,43 @@ For command table:
 we will use the following classes: Command and SimpleCommand
 
 // Command Data Structure
-// Describes a simple command and arguments 
+// Describes a simple command and arguments
 struct SimpleCommand {
         // Available space for arguments currently preallocated
         int _numberOfAvailableArguments;
         // Number of arguments
-        int _numberOfArguments;
+        int_numberOfArguments;
         // Array of arguments
-        char ** _arguments;
+        char **_arguments;
         SimpleCommand();
-        void insertArgument( char * argument );
+        void insertArgument( char *argument );
 };
 // Describes a complete command with the multiple pipes if any
 // and input/output redirection if any.
 struct Command {
-        int _numberOfAvailableSimpleCommands;
+        int_numberOfAvailableSimpleCommands;
         int _numberOfSimpleCommands;
-        SimpleCommand ** _simpleCommands;
-        char * _outFile;
-        char * _inputFile;
-        char * _errFile;
-        int _background;
+        SimpleCommand**_simpleCommands;
+        char*_outFile;
+        char *_inputFile;
+        char* _errFile;
+        int_background;
         void prompt();
         void print();
         void execute();
         void clear();
         Command();
-        void insertSimpleCommand( SimpleCommand * simpleCommand );
+        void insertSimpleCommand( SimpleCommand *simpleCommand );
         static Command _currentCommand;
-        static SimpleCommand *_currentSimpleCommand;
+        static SimpleCommand*_currentSimpleCommand;
 };
 
 The constructor SimpleCommand::SimpleCommand constructs a simple empty command.
-The method SimpleCommand::insertArgument( char * argument ) inserts a new argument
+The method SimpleCommand::insertArgument( char *argument ) inserts a new argument
 into the SimpleCommand and enlarges the _arguments array if necessary. It also makes sure
 that the last element is NULL since that is required for the exec() system call.
-The constructor Command::Command() constructs and empty command that will be populated with the method Command::insertSimpleCommand( SimpleCommand * simpleCommand). insertSimpleCommand also enlarges the array _simpleCommands if necessary. The variables _outFile, _inputFile, _errFile will be NULL if no redirection was done, or the name of the file they are being redirected to.
-The variables  _currentCommand and _currentCommand are static variables, that is
+The constructor Command::Command() constructs and empty command that will be populated with the method Command::insertSimpleCommand( SimpleCommand* simpleCommand). insertSimpleCommand also enlarges the array_simpleCommands if necessary. The variables_outFile,_inputFile,_errFile will be NULL if no redirection was done, or the name of the file they are being redirected to.
+The variables_currentCommand and_currentCommand are static variables, that is
 there is only one for the whole class. These variables are used to build the Command and Simple command during the parsing of the command.
 The Command and SimpleCommand classes implement the main data structure we will use in the shell
 

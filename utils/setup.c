@@ -34,19 +34,39 @@ void setupstruct(struct s_minishell *t_minishell, char *envp[])
 {
 	char *currpwd;
 
-	t_minishell->envp = envp;
+	int i = 0;
+	while(envp[i])
+	{
+		i++;
+	}
+	t_minishell->envp = ft_calloc(i+1, sizeof(char *));
+
+	i--;
+
+	while (i>=0)
+	{
+		t_minishell->envp[i] = ft_calloc( ft_strlen(envp[i]) + 10 , sizeof(char));
+		ft_strlcpy(t_minishell->envp[i], envp[i], ft_strlen(envp[i]) + 1 );
+		// printf("%s\n", envp[i]);
+		// printf("%s\n", t_minishell->envp[i]);
+		i --;
+	}
+
+
+
 	t_minishell->path = findpath(envp);
 	t_minishell->paths = ft_split(t_minishell->path + 5, ':');
 	
 	currpwd = ft_calloc(1024, sizeof(char));
 
-
 	currpwd = getcwd(currpwd, 1024);
 	t_minishell->currpwd = currpwd;
 	if (!t_minishell->currpwd)
 		printf("error in getting curr pwd");
-	printf("curr pwd: %s", t_minishell->currpwd);
+	printf("curr pwd: %s\n", t_minishell->currpwd);
 
+
+	// For Paths and Path
 	// print if required to know the content
 	// printf("path:%s\n\n", t_minishell->path);
 	// int i;
