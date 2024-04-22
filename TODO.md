@@ -21,6 +21,8 @@ cat << EOF > file | wc -c | tr -d " " > file2
 //                                                          file2
 // cat << EOF > file | wc -c | tr -d " " > file2
 
+PIPELINE, COMMAND, ARGUMENT, REDIRECTION
+
 How the above is borken down:
 cat << EOF > file | wc -c | tr -d " " > file2
 
@@ -47,7 +49,14 @@ other commands
 date "+%Y-%m-%d %H:%M:%S" > file | wc -l | tr -d " " > file2
 
 echo "New line" >> file | wc -c | tr -d " " > file2
+
 sed 's/old/new/g' file > file | wc -l | tr -d " " > file2
+
+// This got issue. End with redirect but why?
 grep "error" file | wc -l > file2
+
+// This got issue. End with redirect but why?
 sort file | uniq -c > file2
+
+// This does not work due to no pipes present.
 stat -c "%a" file > file2

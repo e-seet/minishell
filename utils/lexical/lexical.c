@@ -66,20 +66,20 @@ char	**ft_breakup_str(char *str)
 	// asdasdas + sep + asdadas + sep + sadasd 
 	if (num > 1)
 	{
-		printf("number of strs to be calloc:%d\n", num);
-		strs = ft_calloc(num, sizeof(char *));
+		printf("number of strs to be calloc:%d\n", num+1);
+		strs = ft_calloc(num+1, sizeof(char *));
 	}
 	else
-		strs = ft_calloc(num, sizeof(char *));
+		strs = ft_calloc(num+1, sizeof(char *));
 
 
 	// copy all of the strs
 	int backupnum;
 
 	if (num != 0)
-		backupnum = num;
+		backupnum = num+1;
  	else
-		backupnum = 0;
+		backupnum = 0+1;
 	i = 0;
 	num = 0;
 	while (str[i] != '\0')
@@ -165,6 +165,7 @@ void lexical(char *str)
 		i++;
 	}
 
+	printf("finding seg fault\n");
 	parser(strs);
 }
 

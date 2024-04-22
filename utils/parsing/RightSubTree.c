@@ -184,6 +184,8 @@ void	leftSubTree2(struct AST_Node *rootnode, char **strs, int i, int end)
 			if ((curr ->left != NULL) && (ft_strncmp((curr->left)->type, REDIRECTIONS, 12) != 0))
 			{
 				printf("c1: Create empty redirect for you\n");
+				
+				// the issue is here: For extra line after im done
 				newNode = ft_createNode(NULL, -2);
 				curr -> right = newNode;
 				curr = curr -> right;

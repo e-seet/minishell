@@ -30,7 +30,7 @@ void	leftSubTree(struct AST_Node *rootnode, char **strs, int end)
 			|| ft_is_input_redirect(strs[i]) == 1
 		)
 		{
-			printf("Redirect\n");
+			printf("For Redirections\n");
 
 			// If curr left not is not null.
 			// Create a new node on the right with REDIRECT
@@ -38,7 +38,7 @@ void	leftSubTree(struct AST_Node *rootnode, char **strs, int end)
 			if ((curr ->left != NULL) && (ft_strncmp((curr->left)->type, REDIRECTIONS, 12) != 0))
 			{
 				printf("c1: Create empty redirect for you\n");
-				newNode = ft_createNode(NULL, -2);
+				newNode = ft_createNode(NULL, -2); // Empty node Signifying Redirect
 				curr->right = newNode;
 				curr = curr->right;
 
@@ -59,31 +59,36 @@ void	leftSubTree(struct AST_Node *rootnode, char **strs, int end)
 			else 
 			{
 				printf("C3: May have issues with this\n");
-				newNode = ft_createNode(strs, i);
 
 				if (curr->left == NULL)
 				{
+					newNode = ft_createNode(strs, i);
 					curr->left = newNode;
-					curr = curr->left;
+					// curr = curr->left;
 				}
 				else
 				{
+					newNode = ft_createNode(NULL, -2); // Empty node signifying redirect
 					curr->right = newNode;
 					curr = curr->right;
+
+					newNode = ft_createNode(strs, i);
+					curr->left = newNode;
 				}
 			}
 			i++;
 			printf("\n");
 		}
+		// Anything else other than redirect: Command, Argument, Pipeline
 		else
 		{
 			printf("else!\n");
-			// After the pipeline, left side should be command.
+			// This check after the real root.
 			if
 			(ft_strncmp(curr->type, PIPELINE, 8) == 0 && i == 0)
 			{
 				printf("C1: Now Create a Command\n");
-				newNode = ft_createNode(NULL, -1);
+				newNode = ft_createNode(NULL, -1); // Empty node signifying Commands
 				curr -> left = newNode;
 				curr = curr ->left;
 
@@ -97,11 +102,21 @@ void	leftSubTree(struct AST_Node *rootnode, char **strs, int end)
 			else
 			{
 				printf("C2: Create Argument | May have issues here\n");
-				newNode = ft_createNode(strs, i);
 				if (curr->left == NULL)
+				{
+					newNode = ft_createNode(strs, i);
 					curr->left = newNode;
+				}
 				else
+				{
+					// I may need to uncomment the code below.
+					// newNode = ft_createNode(NULL, -1); // Empty node signifying Commands
+					// curr->right = newNode;
+					// curr = curr->right;
+
+					newNode = ft_createNode(strs, i);
 					curr->right = newNode;
+				}
 				printf("\n");
 			}
 			
@@ -129,6 +144,7 @@ void inorderTraversal_L(struct AST_Node* root)
 			printf("This is redirect\n");
 			if (root->seperator != NULL && root->target != NULL)
 			{
+				printf("Not Null!\n");
 				printf("What kind of redirect? %s \n", root->seperator);
 				printf("Target:%s\n\n", root->target);
 			}
