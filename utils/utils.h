@@ -13,8 +13,8 @@
 # include "struct.h"
 
 // libraries required
-#include <readline/readline.h>
-#include <readline/history.h>
+// #include <readline/readline.h>
+// #include <readline/history.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -32,52 +32,62 @@
 #include <errno.h>
 #include <term.h>
 #include <curses.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// #include <readline/readline.h>
+
+// mac os
+// #include <editline/readline.h>
 
 // lexical file
-void	lexical(char *str);
+void			lexical(char *str);
 
 // lexicalutils
-int	ft_is_output_redirect(char *str);
-int	ft_is_append_output_redirect(char *str);
-int	ft_is_input_redirect(char *str);
-int	ft_is_heredoc_redirect(char *str);
-int	ft_is_conditional_or(char *str);
+int				ft_is_output_redirect(char *str);
+int				ft_is_append_output_redirect(char *str);
+int				ft_is_input_redirect(char *str);
+int				ft_is_heredoc_redirect(char *str);
+int				ft_is_conditional_or(char *str);
 
 // lexicalutils2
-int	ft_is_pipe(char *str);
-int	ft_is_double_ampersand(char *str);
-int	ft_is_bracket1(char *str);
-int	ft_is_bracket2(char *str);
-
+int				ft_is_pipe(char *str);
+int				ft_is_double_ampersand(char *str);
+int				ft_is_bracket1(char *str);
+int				ft_is_bracket2(char *str);
 
 // program file
-void	program(char *envp[]);
+void			program(char *envp[]);
 
 // parser folder
 // nodeops
 struct AST_Node *ft_createNode(char **strs, int num);
 // parser
-void	parser(char **strs);
+void			parser(char **strs);
 // void	parser(char *str, char *envp[]);
  
 // left sub tree
-void	leftSubTree(struct AST_Node *rootnode, char **strs, int end);
-void	checkLeftSubTree(struct AST_Node *rootnode);
-void	inorderTraversal_L(struct AST_Node* root);
+void			leftSubTree(struct AST_Node *rootnode, char **strs, int end);
+void			checkLeftSubTree(struct AST_Node *rootnode);
+void			inorderTraversal_L(struct AST_Node* root);
 
 // right sub tree
-void	rightSubTree(struct AST_Node *rootnode, char **strs, int start, int end);
-void checkRightSubTree(struct AST_Node *rootnode);
-void	leftSubTree2(struct AST_Node *rootnode, char **strs, int i, int end);
+void			rightSubTree(struct AST_Node *rootnode, char **strs, int start, int end);
+void			checkRightSubTree(struct AST_Node *rootnode);
+void			leftSubTree2(struct AST_Node *rootnode, char **strs, int i, int end);
 
 //setup
-void	setupstruct(struct s_minishell *t_minishell, char *envp[]);
+void			setupstruct(struct s_minishell *t_minishell, char *envp[]);
 
 //commands
-void updatepwd(struct s_minishell *t_minishell);
+void			updatepwd(struct s_minishell *t_minishell);
 
 // change directory
-void changedirectory(char *str, struct s_minishell *t_minishell);
+void			changedirectory(char *str, struct s_minishell *t_minishell);
 
+//history
+// void			initialize_readline();
+// void			clearhistory();
 
 #endif

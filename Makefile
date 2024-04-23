@@ -6,16 +6,21 @@ NAME        = minishell
 # **************************************************************************** #
 # Comp and flags
 # **************************************************************************** #
-CC := gcc
-CFLAGS := -Wall -Wextra -Werror
+CC := clang
+# CFLAGS := -Wall -Wextra -Werror
+CFLAGS := -Wall -Wextra -Werror -I/opt/homebrew/opt/readline/include
 
 # **************************************************************************** #
 # Source
 # **************************************************************************** #
-SRC_FILES			:=	main.c	./utils/setup.c \
+SRC_FILES			:=	main.c	\
+						./utils/setup.c \
+						\
 						./utils/lexical/lexical.c		./utils/lexical/lexicalutils.c	./utils/lexical/lexicalutils2.c \
+						\
 						./utils/parsing/parser.c		./utils/parsing/RightSubTree.c	./utils/parsing/nodeops.c \
 						./utils/parsing/LeftSubTree.c \
+						\
 						./utils/commands.c \
 						./utils/cd.c\
 
@@ -50,12 +55,13 @@ OBJ_GNL				=	$(GNLSRC:.c=.o)
 .PHONY: all bonus clean fclean re
 
 $(NAME):	$(OBJ_LIBFT) $(OBJ_GNL)	$(OBJS)
-			@$(CC) $(OBJ_LIBFT) $(OBJ_GNL) $(OBJS) -o $(NAME)
+#			@$(CC) $(OBJ_LIBFT) $(OBJ_GNL) $(OBJS) -o $(NAME)
+			@$(CC) $(OBJ_LIBFT) $(OBJ_GNL) $(OBJS) -o $(NAME)  -L/opt/homebrew/opt/readline/lib  -I/opt/homebrew/opt/readline/include -lreadline
 
 all: fclean $(NAME)
 
 $(OBJS): %.o: %.c
-	@$(CC) $(CFLAGS) -I $(LIBFT_DIR) -c $< -o $@
+	@$(CC) $(CFLAGS) -I $(LIBFT_DIR) -c $< -o $@ 
 
 # Libft file compilation
 $(OBJ_LIBFT): %.o: %.c

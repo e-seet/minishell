@@ -60,3 +60,10 @@ sort file | uniq -c > file2
 
 // This does not work due to no pipes present.
 stat -c "%a" file > file2
+..
+..
+3. CD
+* tilde [~..]
+* cd [To return to home]
+
+4. Working history not done as well
