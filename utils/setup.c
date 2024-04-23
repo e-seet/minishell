@@ -40,19 +40,12 @@ void setupstruct(struct s_minishell *t_minishell, char *envp[])
 		i++;
 	}
 	t_minishell->envp = ft_calloc(i+1, sizeof(char *));
-
 	i--;
+	t_minishell->envplen = i;
 
-	while (i>=0)
-	{
-		t_minishell->envp[i] = ft_calloc( ft_strlen(envp[i]) + 10 , sizeof(char));
-		ft_strlcpy(t_minishell->envp[i], envp[i], ft_strlen(envp[i]) + 1 );
-		// printf("%s\n", envp[i]);
-		// printf("%s\n", t_minishell->envp[i]);
-		i --;
-	}
-
-
+	// we set up the env variables here. 
+	// need to update whenever we set and unset too
+	envvariables(t_minishell, envp); //temp here
 
 	t_minishell->path = findpath(envp);
 	t_minishell->paths = ft_split(t_minishell->path + 5, ':');
@@ -78,4 +71,5 @@ void setupstruct(struct s_minishell *t_minishell, char *envp[])
 	// }
 
 
+		
 }

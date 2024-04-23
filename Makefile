@@ -23,6 +23,7 @@ SRC_FILES			:=	main.c	\
 						\
 						./utils/commands.c \
 						./utils/cd.c\
+						./utils/env_changes.c
 
 OBJS				=	$(SRC_FILES:.c=.o)
 

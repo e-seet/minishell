@@ -54,6 +54,7 @@ struct s_minishell
 	char	**paths;
 	char	*path;
 	char	**envp;
+	int		envplen;
 
 	char	*prevpwd;
 	char	*currpwd;

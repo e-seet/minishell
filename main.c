@@ -33,59 +33,6 @@ int	checkforexit(char *envp[])
 	printf("\033[1;31m\n");
 
 	str = NULL;
-	// while (1)
-	// {
-	// 	write(1, "minishell> ", 11);
-	// 	str = get_next_line(0);
-		
-	// 	// check for exits.
-	// 	if (str == NULL
-	// 		|| ((ft_strncmp(str, "exit", ft_strlen(
-	// 						"exit")) == 0) && (ft_strlen(str)
-	// 				- linechecker(str)) == ft_strlen("exit")))
-	// 				{
-	// 					printf("break\n");
-	// 					break ;
-	// 				}
-	// 	else
-	// 	{
-	// 		if (ft_strncmp(str, "env", ft_strlen("env")) == 0)
-	// 		{
-	// 			// if just env [Based off eval]
-	// 			int i = 0;
-	// 			while (t_minishell->envp[i])
-	// 			{
-	// 				printf("%s\n", t_minishell->envp[i]);
-	// 				i++;
-	// 			}
-	// 			// if there are other commands EG:
-	// 			// 1.Run command with modified env
-	// 			// env VAR1=foo VAR2=bar command
-	// 			// 2.Modify the env for shell session
-	// 			// env Path=$PATH:/new/path
-	// 			// 3.Print value of specific env
-	// 			// env | grep PATH
-	// 			// 4. execute command with clean env
-	// 			// env -i command
-	// 			// 5. setting env variable for a command
-	// 			// env -u VAR1 -i VAR2=value command
-
-	// 		}
-	// 		else if (ft_strncmp(str, "pwd", ft_strlen("pwd")) ==0)
-	// 		{
-	// 			updatepwd(t_minishell);
-	// 			printf("%s\n", t_minishell->currpwd);
-	// 		}
-	// 		else if (ft_strncmp(str, "cd", ft_strlen("cd")) ==0)
-	// 		{
-	// 			changedirectory(str, t_minishell);
-	// 		}
-	// 	}
-	// 	free(str);
-	// 	str = NULL;
-	// }
-	// if (str != NULL)
-	// 	free(str);
 
 	// initialize_readline();
 	rl_clear_history();
@@ -144,6 +91,16 @@ int	checkforexit(char *envp[])
 				// env -u VAR1 -i VAR2=value command
 
 			}
+			else if (ft_strncmp(str, "export", ft_strlen("export")) == 0)
+			{
+				// export to env
+				exportstr(str, t_minishell);	
+			}
+			else if (ft_strncmp(str, "unset", ft_strlen("unset")) == 0)
+			{
+				// unset a variable in the env
+				unsetmyenv(str, t_minishell);
+			}
 			else if (ft_strncmp(str, "pwd", ft_strlen("pwd")) ==0)
 			{
 				updatepwd(t_minishell);
@@ -157,7 +114,8 @@ int	checkforexit(char *envp[])
         }
 
         rl_on_new_line(); // Prepare readline for new input
-        rl_redisplay(); // Redisplay the line (useful if line was replaced)
+		// this should comment out
+        // rl_redisplay(); // Redisplay the line (useful if line was replaced)
         
         free(str); // Free the input string allocated by readline
  

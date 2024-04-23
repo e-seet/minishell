@@ -86,8 +86,9 @@ void			updatepwd(struct s_minishell *t_minishell);
 // change directory
 void			changedirectory(char *str, struct s_minishell *t_minishell);
 
-//history
-// void			initialize_readline();
-// void			clearhistory();
+// env
+void			exportstr(char *str, struct s_minishell *t_minishell);
+void			unsetmyenv(char *str, struct s_minishell *t_minishell);
+void			envvariables(struct s_minishell *t_minishell, char *envp[]);
 
 #endif

@@ -63,7 +63,52 @@ stat -c "%a" file > file2
 ..
 ..
 3. CD
+
 * tilde [~..]
 * cd [To return to home]
+..
+.
 
-4. Working history not done as well
+4. EXPORt & UNSET
+
+Eg:
+// Export to the environment
+export MY_VAR="Hello"
+
+// You can grep from environment to see it.
+// Alternatively you can env and slowly find
+env | grep MY_VAR
+
+// Unset to remove it from the env
+unset MY_VAR
+
+// You can grep from environment to see it.
+// Alternatively you can env and slowly find
+// Should not be able to find MY_VAR
+env | grep MY_VAR
+
+How to do it?
+
+// Set the environment variable MY_VARIABLE to "Hello, World!"
+setenv("MY_VARIABLE", "Hello, World!", 1);
+
+ // Unset the environment variable MY_VARIABLE
+unsetenv("MY_VARIABLE");
+
+5. To do error handling for all of them
+
+6. Handling single and double quotations
+
+7. Finding of env variable and substituting
+
+Logic:
+lexical -> parser -> sub -> replace empty str
+
+Heredoc [have the existing code to move over]
+
+program execution [have the existing code to run the program]
+but need to do parallel
+
+signal
+
+Pipes
