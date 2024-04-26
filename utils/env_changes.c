@@ -150,11 +150,13 @@ void envvariables(struct s_minishell *t_minishell, char *envp[])
 	{
 		t_minishell->envp[temp] = ft_calloc( ft_strlen(envp[temp]) + 10 , sizeof(char));
 		
-		printf("original:%s\n", envp[temp]);
+		// printf("original:%s\n", envp[temp]);
+		
 		ft_strlcpy(t_minishell->envp[temp], envp[temp], ft_strlen(envp[temp]) + 1 );
 		// printf("%s\n", envp[i]);
 		// printf("%d", temp);
-		printf("%s\n", t_minishell->envp[temp]);
+
+		// printf("%s\n", t_minishell->envp[temp]);
 		temp ++;
 	}
 

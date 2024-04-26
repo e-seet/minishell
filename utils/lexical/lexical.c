@@ -59,6 +59,16 @@ char	**ft_breakup_str(char *str)
 			num++;
 			i ++;
 		}
+		// the num for below may need to change
+		else if (
+			(ft_is_bracket1(&str[i]) == 1)
+			|| (ft_is_bracket2(&str[i]) == 1)
+		)
+		{
+			num++;
+			num++;
+			i ++;
+		}
 		else
 			i++;
 	}
@@ -149,7 +159,7 @@ char	**ft_breakup_str(char *str)
 }
 
 // Lexing: just split the input into tokens as you please and see useful for the parsing phase.
-void lexical(char *str)
+void lexical(char *str, struct s_minishell *t_minishell)
 {
 	char **strs;
 
@@ -165,8 +175,8 @@ void lexical(char *str)
 		i++;
 	}
 
-	printf("finding seg fault\n");
-	parser(strs);
+	parser(strs, t_minishell); // praser
+	cleanupstring(t_minishell); //clean up string but sub first
 }
 
 // if (ft_strncmp(str, "echo", 4) == 0)

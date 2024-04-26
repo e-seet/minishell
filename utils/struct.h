@@ -51,14 +51,23 @@ struct AST_Node
 
 struct s_minishell
 {
-	char	**paths;
-	char	*path;
-	char	**envp;
-	int		envplen;
+	char			**paths;
+	char			*path;
 
-	char	*prevpwd;
-	char	*currpwd;
+	// my env variables
+	char			**envp;
+	// number of env variable
+	int				envplen;
 
+	char			*prevpwd;
+	char			*currpwd;
+
+	// for ast.
+	struct AST_Node	*rootnode;
+
+	// the seperated out commands for execve
+	char			**commands;
+	int				commandlen;
 };
 
 

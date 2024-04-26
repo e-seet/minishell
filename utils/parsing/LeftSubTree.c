@@ -19,8 +19,7 @@ void	leftSubTree(struct AST_Node *rootnode, char **strs, int end)
 
 	while (end > i)
 	{
-		printf("curr str:%s\n", strs[i]);
-
+		// printf("curr str:%s\n", strs[i]);
 		// If it is >> or <<
 		// skip the next as i store the file target here
 		if (
@@ -96,7 +95,7 @@ void	leftSubTree(struct AST_Node *rootnode, char **strs, int end)
 				newNode = ft_createNode(strs, i);
 				printf("Check the type:%s\n", newNode->type);
 				curr -> left = newNode;
-				printf("checked my connection worked %s\n\n", curr->left->type);
+				// printf("checked my connection worked %s\n\n", curr->left->type);
 			}
 
 			else
@@ -218,3 +217,117 @@ void inorderTraversal_L(struct AST_Node* root)
 // 			break;
 // 	}
 // }
+
+
+
+
+
+void	leftSubTree2(struct AST_Node *rootnode, char **strs, int end)
+{
+	int 			i;
+	struct AST_Node *curr;
+	struct AST_Node *newNode;
+
+	i = 0;
+	curr = rootnode;
+
+	while (end > i)
+	{
+		// printf("curr str:%s\n", strs[i]);
+
+
+		if (curr->left == NULL)
+		{
+			newNode = ft_createNode(NULL, -1);
+			curr->left = newNode;
+		}
+
+		// If it is >> or <<
+		// skip the next as i store the file target here
+		else if (
+			ft_is_heredoc_redirect(strs[i]) == 1
+			|| ft_is_output_redirect(strs[i]) == 1
+			|| ft_is_append_output_redirect(strs[i]) == 1
+			|| ft_is_input_redirect(strs[i]) == 1
+		)
+		{
+			printf("Redirect\n");
+
+			// If curr left not is not null.
+			// Create a new node on the right with REDIRECT
+			// Create a node with redirect n value on the left
+			if ((curr ->left != NULL) && (ft_strncmp((curr->left)->type, REDIRECTIONS, 12) != 0))
+			{
+				printf("c1: Create empty redirect for you\n");
+				
+				// the issue is here: For extra line after im done
+				newNode = ft_createNode(NULL, -2);
+				curr -> right = newNode;
+				curr = curr -> right;
+
+				newNode = ft_createNode(strs, i);
+				curr -> left = newNode;
+			}
+			// If the curr left is not null and that node is redirect
+			// Create a new node and append to right
+			else if (curr->left != NULL && (ft_strncmp((curr->left)->type, REDIRECTIONS, 12)) == 0)
+			{
+				printf("C2\n");
+				newNode = ft_createNode(strs, i);
+				curr->right = newNode;
+			}
+			// the following may cause issues with redirects
+			else 
+			{
+				printf("C3\n");
+				newNode = ft_createNode(strs, i);
+				curr->left = newNode;
+				curr = curr->left;
+			}
+			i++;
+			printf("\n");
+		}
+		else
+		{
+			// After the pipeline, left side should be command.
+			if
+			(ft_strncmp(curr->type, PIPELINE, 8) == 0)
+			{
+				// printf("Now Create a Command\n");
+				newNode = ft_createNode(NULL, -1);
+				curr -> right = newNode;
+				curr = curr ->right;
+
+				printf("Follow up by whatever it is\n");
+				newNode = ft_createNode(strs, i);
+				printf("Check the type:%s\n", newNode->type);
+				curr -> left = newNode;
+				// printf("checked my connection worked %s\n\n", curr->left->type);
+			}
+			else
+			{
+				printf("Create Argument2\n");
+				if (curr->left == NULL)
+				{
+					newNode = ft_createNode(strs, i);
+					curr->left = newNode;
+				}
+				else 
+				{
+					// here i should create another buffer
+					newNode = ft_createNode(NULL, -1);
+					curr -> right = newNode;
+					curr = curr ->right;
+
+					newNode = ft_createNode(strs, i);
+					curr->left = newNode;
+
+				}
+				printf("\n");
+			}
+			
+		}
+		i ++;
+	}
+
+}

@@ -1,5 +1,6 @@
 #include "../utils.h"
 
+
 // Syntax analysis / Parsing: scanning the stream of tokens according to a specific
 // grammar and then deciding what to do with them 
 // (e.g. generating an AST — Abstract Syntax Tree).
@@ -23,7 +24,7 @@
 //                                                          file2
 // cat << EOF > file | wc -c | tr -d " " > file2
 
-void parser(char **strs)
+void parser(char **strs, struct s_minishell *t_minishell)
 {
 
 	// check for the number of pipes and redirect
@@ -63,37 +64,63 @@ void parser(char **strs)
 
 
 	struct AST_Node *rootnode; // this will be the root node.
+	
+	// rootnode = NULL;
+	rootnode = ft_createNode(strs, 0);
+	// This will build the whole tree after the first node is built
+	leftSubTree2(rootnode, strs, i);
+
 
 	// Now i want to build based off my pipe first
-	if (pipecount != 0)
-	{
-		// create Root node first [Based off the first pipe token we found]
-		rootnode = ft_createNode(strs, firstpipe);
+	// if (pipecount != 0)
+	// {
+	// 	// create Root node first [Based off the first pipe token we found]
+	// 	rootnode = ft_createNode(strs, firstpipe);
+	// 	// left side is 0 to firstpipe-1
+	// 	leftSubTree(rootnode, strs, firstpipe);
+	// 	// printf("end of left subtree\n\n\n\n\n\n\n");
 
-		// left side is 0 to firstpipe-1
-		leftSubTree(rootnode, strs, firstpipe);
-		printf("end of left subtree\n\n\n\n\n\n\n");
-
-
-		// checkLeftSubTree(rootnode);
-		// inorderTraversal_L(rootnode);
+	// 	// checkLeftSubTree(rootnode);
+	// 	// inorderTraversal_L(rootnode);
 		
 
-		// Check if there is any redirects inside [settled]
-		// otherwise is just arguments. [settled]
-		// printf("\n\n\n");
-		// right side is from firstpipe + 1 to i
-		// printf("Right sub tree\n");
-		// rightSubTree(rootnode, strs, firstpipe+1, i);
+	// 	// Check if there is any redirects inside [settled]
+	// 	// otherwise is just arguments. [settled]
+	// 	// printf("\n\n\n");
+	// 	// right side is from firstpipe + 1 to i
+	// 	// printf("Right sub tree\n");
+	// 	// rightSubTree(rootnode, strs, firstpipe+1, i);
 
-		// let's see what happen if i use the same algo for right half
-		leftSubTree2(rootnode, strs, firstpipe+1, i);
-		printf("checking traversal\n\n\n\n\n\n\n");
-		inorderTraversal_L(rootnode);
-		// checkRightSubTree(rootnode);
+	// 	// Works 
+	// 	// leftSubTree2(rootnode, strs, firstpipe+1, i);
+	// 	leftSubTree2(rootnode, strs, 0, i);
+		
+	// 	// printf("checking traversal\n\n\n\n\n\n\n");
+	// 	// inorderTraversal_L(rootnode);
 
-	}
-	else
-	{
-	}
+	// 	// checkRightSubTree(rootnode);
+
+
+	// 	//testing
+	// 	// leftSubTree3(rootnode, strs, i);
+
+	// }
+	// else
+	// {
+
+	// 	// to do
+	// 	// build ast without pipe as focus
+	// 	// rootnode = ft_createNode(strs, firstpipe);
+
+	// }
+
+	
+
+	if (rootnode != NULL)
+		t_minishell->rootnode = rootnode;
 }
+
+
+
+
+

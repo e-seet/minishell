@@ -19,12 +19,12 @@ struct AST_Node *ft_createNode(char **strs, int num)
 		node->left = NULL;
 		node->right = NULL;
 	}
-	else if ( (strs == NULL) && (num == -3))
-	{
-		node->type = PIPELINE;
-		node->left = NULL;
-		node->right = NULL;
-	}
+	// else if ( (strs == NULL) && (num == -3))
+	// {
+	// 	node->type = PIPELINE;
+	// 	node->left = NULL;
+	// 	node->right = NULL;
+	// }
 	else if ( (strs == NULL) && (num == -4))
 	{
 		node->type = ARGUMENTS;

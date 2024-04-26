@@ -21,9 +21,10 @@ SRC_FILES			:=	main.c	\
 						./utils/parsing/parser.c		./utils/parsing/RightSubTree.c	./utils/parsing/nodeops.c \
 						./utils/parsing/LeftSubTree.c \
 						\
+						./utils/string_cleanup.c\
 						./utils/commands.c \
 						./utils/cd.c\
-						./utils/env_changes.c
+						./utils/env_changes.c \
 
 OBJS				=	$(SRC_FILES:.c=.o)
 

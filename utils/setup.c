@@ -59,6 +59,8 @@ void setupstruct(struct s_minishell *t_minishell, char *envp[])
 	printf("curr pwd: %s\n", t_minishell->currpwd);
 
 
+	t_minishell->commandlen = 0;
+
 	// For Paths and Path
 	// print if required to know the content
 	// printf("path:%s\n\n", t_minishell->path);

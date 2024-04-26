@@ -91,6 +91,8 @@ int	checkforexit(char *envp[])
 				// env -u VAR1 -i VAR2=value command
 
 			}
+			// Export and set don't really need clean up since they are more or less fixed
+			// eg: Export MY_VAR="smth" || unset MY_VAR
 			else if (ft_strncmp(str, "export", ft_strlen("export")) == 0)
 			{
 				// export to env
@@ -110,7 +112,10 @@ int	checkforexit(char *envp[])
 			{
 				changedirectory(str, t_minishell);
 			}
-
+			else
+			{
+				lexical(str, t_minishell);
+			}
         }
 
         rl_on_new_line(); // Prepare readline for new input

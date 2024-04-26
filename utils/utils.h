@@ -42,7 +42,7 @@
 // #include <editline/readline.h>
 
 // lexical file
-void			lexical(char *str);
+void			lexical(char *str, struct s_minishell *t_minishell);
 
 // lexicalutils
 int				ft_is_output_redirect(char *str);
@@ -64,8 +64,7 @@ void			program(char *envp[]);
 // nodeops
 struct AST_Node *ft_createNode(char **strs, int num);
 // parser
-void			parser(char **strs);
-// void	parser(char *str, char *envp[]);
+void			parser(char **strs, struct s_minishell *t_minishell);
  
 // left sub tree
 void			leftSubTree(struct AST_Node *rootnode, char **strs, int end);
@@ -75,7 +74,14 @@ void			inorderTraversal_L(struct AST_Node* root);
 // right sub tree
 void			rightSubTree(struct AST_Node *rootnode, char **strs, int start, int end);
 void			checkRightSubTree(struct AST_Node *rootnode);
-void			leftSubTree2(struct AST_Node *rootnode, char **strs, int i, int end);
+
+void			leftSubTree2(struct AST_Node *rootnode, char **strs, int end);
+
+void	leftSubTree3(struct AST_Node *rootnode, char **strs, int end);
+
+// string_cleanup.c
+void			cleanupstring(struct s_minishell *t_minishell);
+
 
 //setup
 void			setupstruct(struct s_minishell *t_minishell, char *envp[]);
