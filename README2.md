@@ -12,18 +12,21 @@ Seperate input into token.
 6. (<<) redirect heredoc
 7. (|) pipe
 8. (=)
-9. (/)
-10. (+)
+9. (/) for file directory
+10. (+) will print out as + for string. Will add in $(5+10)
 11. (!)
 12. (`) backtick
-13. (~) tilde
-14. (;) semi-colon
-15. (\) back slash
-16. (.) dot
-17. (?) question mark
-18. (-) minus
-19. ($) dollar sign
+13. (;) semi-colon To seperate into multi commands. eg: cmd1; cmd2; cmd3
+14. (\) back slash
+15. (.) dot
+16. (?) question mark
+17. (-) minus
+18. ($) dollar sign For variable
 
+Not sure if need or not
+13. (~) tilde
+
+Don't Need
 20. (>&)
 21. ampersand (&)  [Don't need]
 22. (:) [Don't need]

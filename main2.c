@@ -1,4 +1,6 @@
 // original code from pipex
+#include <stdio.h>
+#include <unistd.h>
 
 char	*findprocesspath(char **paths)
 {

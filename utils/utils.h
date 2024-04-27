@@ -56,11 +56,21 @@ int				ft_is_pipe(char *str);
 int				ft_is_double_ampersand(char *str);
 int				ft_is_bracket1(char *str);
 int				ft_is_bracket2(char *str);
+int				ft_is_semicolon(char *str);
+
+int				ft_is_dollar(char *str);
+int				ft_is_single_quote(char *str);
+int				ft_is_double_quote(char *str);
+int				ft_is_whitespaces(char *str);
+
 
 // program file
 void			program(char *envp[]);
 
 // parser folder
+void newparse(char **strs, int i, struct s_minishell *t_minishell);
+
+
 // nodeops
 struct AST_Node *ft_createNode(char **strs, int num);
 // parser

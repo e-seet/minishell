@@ -313,12 +313,6 @@ char *inorderTraversal(struct AST_Node* root, char *str1, struct s_minishell *t_
 // }
 
 
-
-// void	subvariable(struct s_minishell *t_minishell)
-// {
-// }
-
-
 void cleanupstring(struct s_minishell *t_minishell)
 {
 

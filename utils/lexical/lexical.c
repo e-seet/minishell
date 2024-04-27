@@ -50,6 +50,7 @@ char	**ft_breakup_str(char *str)
 			(ft_is_output_redirect(&str[i]) == 1)
 			|| (ft_is_input_redirect(&str[i]) == 1)
 			|| (ft_is_pipe(&str[i]) == 1)
+			|| (ft_is_semicolon(&str[i]) == 1)
 			|| (ft_is_bracket1(&str[i]) == 1)
 			|| (ft_is_bracket2(&str[i]) == 1)
 			// || (ft_is_double_ampersand(&str[i]) == 1)
@@ -125,6 +126,8 @@ char	**ft_breakup_str(char *str)
 			(ft_is_output_redirect(&str[i]) == 1)
 			|| (ft_is_input_redirect(&str[i]) == 1)
 			|| (ft_is_pipe(&str[i]) == 1)
+			|| (ft_is_semicolon(&str[i]) == 1)
+			
 			|| (ft_is_bracket1(&str[i]) == 1)
 			|| (ft_is_bracket2(&str[i]) == 1)
 			// || (ft_is_double_ampersand(&str[i]) == 1)
@@ -175,8 +178,13 @@ void lexical(char *str, struct s_minishell *t_minishell)
 		i++;
 	}
 
-	parser(strs, t_minishell); // praser
-	cleanupstring(t_minishell); //clean up string but sub first
+
+	printf("%p\n", t_minishell);
+	newparse(strs, i, t_minishell);
+
+	// parser(strs, t_minishell); // praser
+	// cleanupstring(t_minishell); //clean up string but sub first
+
 }
 
 // if (ft_strncmp(str, "echo", 4) == 0)

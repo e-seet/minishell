@@ -18,9 +18,9 @@ SRC_FILES			:=	main.c	\
 						\
 						./utils/lexical/lexical.c		./utils/lexical/lexicalutils.c	./utils/lexical/lexicalutils2.c \
 						\
+						./utils/parsing/newparse.c\
 						./utils/parsing/parser.c		./utils/parsing/RightSubTree.c	./utils/parsing/nodeops.c \
 						./utils/parsing/LeftSubTree.c \
-						\
 						./utils/string_cleanup.c\
 						./utils/commands.c \
 						./utils/cd.c\

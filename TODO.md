@@ -4,7 +4,17 @@
 Double check whether im copying everything correctly or not.
 
 2. To check parser
-cat << EOF > file | wc -c | tr -d " " > file2
+cat << EOF > file | wc -c | tr -d " " > file2 | ls -l | wc -c
+
+cat << EOF > file | wc -c | tr -d " " > file2 | ls -l | wc -c | grep "mini" < TODO.md; ls-l
+
+cat << EOF > file | wc -c | tr -d " " > file2 | ls -l | wc -c | echo $HOME | grep "mini" < TODO.md; ls-l | echo $HOME
+
+grep 'pattern' << EOF
+line 1 with pattern
+line 2 without pattern
+line 3 with pattern again
+EOF
 
 // sample AST to be created
 //                       __PIPELINE__
@@ -69,7 +79,7 @@ stat -c "%a" file > file2
 ..
 .
 
-4. EXPORt & UNSET
+4. EXPORT & UNSET
 
 Eg:
 // Export to the environment
@@ -100,6 +110,8 @@ unsetenv("MY_VARIABLE");
 6. Handling single and double quotations
 
 7. Finding of env variable and substituting
+
+8. Figure out whether i need to handle parsing ';'
 
 Logic:
 lexical -> parser -> sub -> replace empty str
