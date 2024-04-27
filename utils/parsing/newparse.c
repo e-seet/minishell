@@ -460,5 +460,26 @@ void newparse(char **strs, int i, struct s_minishell *t_minishell)
 
 	// not using now! because it will remove something like this
 	// tr -d " "
-	// removeallwhitespaces(t_minishell);
+	removeallwhitespaces(t_minishell);
+
+
+	// temp running progra
+	// runnin the first command. 
+	// May need to fork beforehand
+
+	printf("to run program for now\n\n\n");
+	int processid = fork();
+
+	if (processid == 0)
+	{
+		printf("child\n");
+		program(t_minishell, 0);
+	}
+	else
+	{
+		printf("parent\n");
+		waitpid(processid, NULL, 0);
+	}
+
+
 }

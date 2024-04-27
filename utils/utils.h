@@ -65,7 +65,9 @@ int				ft_is_whitespaces(char *str);
 
 
 // program file
-void			program(char *envp[]);
+// void			program(char *envp[]);
+// void			program(struct s_minishell *t_minishell);
+void			program(struct s_minishell *t_minishell, int commandid);
 
 // parser folder
 void newparse(char **strs, int i, struct s_minishell *t_minishell);
