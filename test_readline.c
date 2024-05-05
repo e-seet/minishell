@@ -1,32 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   draft_bash.c                                       :+:      :+:    :+:   */
+/*   test_readline.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aadenan <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/05/01 12:33:32 by aadenan           #+#    #+#             */
-/*   Updated: 2024/05/05 12:56:43 by aadenan          ###   ########.fr       */
+/*   Created: 2024/05/03 16:21:47 by aadenan           #+#    #+#             */
+/*   Updated: 2024/05/05 12:54:34 by aadenan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// This can be deleted.
-// Version 1 of draft. There is version 2, improved
-// Just a very mini mini bash version for my own reference
-// Why Ctrl + c not displaying back the prompt?
-// Why Ctrl + \ not ignoring "^\"?
-// Why Ctrl + d showed "%"?
+// Improved version of very mini mini bash for my own reference
+// Resolved signal issues for Ctrl+c, Ctrl+\, Ctrl+d
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <signal.h>
 #include <unistd.h>
-#include <sys/wait.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <sys/wait.h>
+#include <sys/types.h>
 
-#define MAX_ARGS 64
-#define MAX_COMMAND_LENGTH 1024
+#define MAX_ARGS 10
 
 void parse_input(char *input, char **args)
 {
@@ -73,7 +69,7 @@ void execute_command(char **args)
         // Execute the command in the child process using execvp
         // execvp replaces the current process with a new process as specified by the arguments
         // args[0] is the command to be executed, and args is the array of arguments
-	// including the command
+        // including the command
         // If execvp returns -1, an error occurred
         if (execvp(args[0], args) == -1)
         {
@@ -88,7 +84,7 @@ void execute_command(char **args)
         // Parent process waits for the child process to complete
         do
             // waitpid suspends execution of the calling process until a child specified
-	    // by pid argument has changed state
+            // by pid argument has changed state
             waitpid(pid, &status, WUNTRACED);
         // Loop until the child process either exits normally or is terminated by a signal
         while (!WIFEXITED(status) && !WIFSIGNALED(status));
@@ -113,69 +109,63 @@ void cd(char **args)
 
 void handle_sigint(int sig)
 {
-	printf("\n");
-	fflush(stdout);
+    printf("\n");
+    rl_on_new_line();
+    rl_redisplay();
 }
 
-int main(void)
-{
-    char input[MAX_COMMAND_LENGTH]; // Buffer to store user input command
-    char *args[MAX_ARGS];           // Array to store parsed arguments of the command
+int main(void) {
+    char *input;
+    char *args[MAX_ARGS];
 
-    // Register signal handler for SIGINT (Ctrl+C)
     signal(SIGINT, handle_sigint);
-    // Ignore SIGQUIT (Ctrl+\)
     signal(SIGQUIT, SIG_IGN);
 
-    // Print shell start message
-    printf("Shell started.\n");
+    // Loop indefinitely
+    while (1) {
+        // Read a line of input with readline
+        input = readline("Bash me up$: ");
 
-    // Infinite loop to continuously accept user input
-    while (1)
-    {
-	readline("aqil user prob$");
-        // Print shell prompt
-        //printf("Very mini bash ~$ ");
-        // Flush output buffer to ensure prompt is immediately displayed
-        fflush(stdout);
-
-        // Read user input from stdin
-        if (fgets(input, MAX_COMMAND_LENGTH, stdin) == NULL)
-        {
-            // Break the loop if Ctrl+D (EOF) is entered
-	    printf("\nexit\n");
+        // Check if Ctrl+D (EOF) is encountered
+        if (input == NULL) {
+            printf("Ctrl+D encountered. Exiting...\n");
             break;
         }
 
-        // Parse user input into arguments
-        parse_input(input, args);
-
-        // If no arguments provided, continue to next iteration
-        if (args[0] == NULL)
-        {
-            continue;
-        }
-
-        // Check if user wants to exit the shell
-        if (strcmp(args[0], "exit") == 0)
+	// Parse user input into arguments
+	parse_input(input, args);
+	
+	// If no arguments provided, continue to next iteration
+	if (args[0] == NULL)
 	{
-            // Break the loop if "exit" command is entered
-	    printf("\nexit\n");
-            break;
+	    continue;
+	}
+
+        // Check if the user wants to exit
+        if (strcmp(args[0], "exit") == 0) {
+	    printf("exit\n");
+            free(input); // Free memory
+            break; // Exit the loop
         }
-        // Check if user wants to change directory
-        else if (strcmp(args[0], "cd") == 0)
-        {
-            // Call cd function to change directory
-            cd(args);
-        }
-        // Execute other commands
-        else
-        {
-            // Call function to execute the command
-            execute_command(args);
-        }
+	else if (strcmp(args[0], "cd") == 0) {
+	    cd(args);
+	}
+	else
+	{
+		execute_command(args);
+	}
+
+        // Add the input to history
+        if (input)
+            add_history(input);
+
+        // Display the input
+        // printf("You entered: %s\n", input);
+
+        // Free the memory allocated for the input
+        free(input);
     }
-    // Exit the shell
-    return EXIT_SUCCESS;
+
+    return 0;
 }
+
