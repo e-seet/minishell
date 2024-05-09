@@ -6,7 +6,7 @@
 /*   By: aadenan <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/03 16:21:47 by aadenan           #+#    #+#             */
-/*   Updated: 2024/05/05 14:34:18 by aadenan          ###   ########.fr       */
+/*   Updated: 2024/05/09 12:30:56 by aadenan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ void parse_input(char *input, char **args)
         // Move to the next token in the input string
         token = strtok(NULL, " \t\n");
         // Increment the index counter to move to the next position in the args array
+	printf("String: %s\n", args[i]);
         i++;
     }
 
@@ -167,6 +168,7 @@ int main(void)
 	else
 	{
 	    // Call function to execute the command
+	    printf("Executing other commands\n");
 	    execute_command(args);
 	}
 
