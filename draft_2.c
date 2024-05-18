@@ -6,12 +6,12 @@
 /*   By: aadenan <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 11:08:06 by aadenan           #+#    #+#             */
-/*   Updated: 2024/05/15 16:01:24 by aadenan          ###   ########.fr       */
+/*   Updated: 2024/05/18 16:13:33 by aadenan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 // For reference
-// Fix env expansion
+// Might need to rethink about export & unset
 // Soon to be draft_bash v0.3
 
 #include <stdio.h>
@@ -26,10 +26,77 @@
 #include <ctype.h>
 
 #define MAX_TOKENS 100
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char* expand_env_variable(const char* input) {
+    // Maximum length of expanded string
+    size_t max_len = 2048; // Adjust as needed
+    char* expanded = (char*)malloc(max_len);
+    if (expanded == NULL) {
+        fprintf(stderr, "Memory allocation failed.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    size_t input_len = strlen(input);
+    size_t out_pos = 0;
+
+    for (size_t i = 0; i < input_len; ++i) {
+        if (input[i] == '$' && input[i + 1] == '{') {
+            // Found a possible environment variable
+            size_t j = i + 2;
+            while (input[j] != '\0' && input[j] != '}') {
+                ++j;
+            }
+            if (input[j] == '}') {
+                // Valid environment variable found
+                size_t name_len = j - i - 2;
+                char* name = (char*)malloc(name_len + 1);
+                if (name == NULL) {
+                    fprintf(stderr, "Memory allocation failed.\n");
+                    exit(EXIT_FAILURE);
+                }
+                memcpy(name, &input[i + 2], name_len);
+                name[name_len] = '\0';
+                const char* value = getenv(name);
+                if (value != NULL) {
+                    size_t value_len = strlen(value);
+                    if (out_pos + value_len > max_len - 1) {
+                        max_len *= 2;
+                        expanded = (char*)realloc(expanded, max_len);
+                        if (expanded == NULL) {
+                            fprintf(stderr, "Memory allocation failed.\n");
+                            exit(EXIT_FAILURE);
+                        }
+                    }
+                    memcpy(&expanded[out_pos], value, value_len);
+                    out_pos += value_len;
+                    i = j; // Skip the rest of the environment variable
+                }
+                free(name);
+            }
+        } else {
+            expanded[out_pos++] = input[i];
+        }
+
+        if (out_pos >= max_len - 1) {
+            // Increase buffer size if needed
+            max_len *= 2;
+            expanded = (char*)realloc(expanded, max_len);
+            if (expanded == NULL) {
+                fprintf(stderr, "Memory allocation failed.\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+
+    expanded[out_pos] = '\0';
+    return expanded;
+}
 
 // Expand environment variables in a string
 char* expand_variables(const char* input) {
-    printf("Inside expand_variables function\n");
     char* result = malloc(strlen(input) + 1);
     int i = 0, j = 0;
     while (input[i] != '\0') {
@@ -51,52 +118,65 @@ char* expand_variables(const char* input) {
         }
     }
     result[j] = '\0';
-    printf("result: %s\n", result);
     return result;
 }
 
 // Tokenize input considering quotes
-char** tokenize(char* input) {
+char** tokenize(char* input)
+{
     char** tokens = malloc(MAX_TOKENS * sizeof(char*));
     char* token = malloc(strlen(input) + 1);
-    int i = 0, j = 0, k = 0;
+    char *tmp;
+    int i = 0, j = 0, k = 0, m = 0;
     int inSingleQuote = 0, inDoubleQuote = 0;
 
-    while (input[i] != '\0') {
-        if (input[i] == '\'' && !inDoubleQuote) {
+    while (input[i] != '\0')
+    {
+        if (input[i] == '\'' && !inDoubleQuote)
+	{
             inSingleQuote = !inSingleQuote;
-        } else if (input[i] == '"' && !inSingleQuote) {
+        }
+	else if (input[i] == '"' && !inSingleQuote)
+	{
             inDoubleQuote = !inDoubleQuote;
-            if (!inDoubleQuote) {
+            if (!inDoubleQuote)
+	    {
                 token[j] = '\0';
                 char* expanded = expand_variables(token);
                 strcpy(token, expanded);
                 free(expanded);
                 j = strlen(token);
             }
-        } else if (input[i] == ' ' && !inSingleQuote && !inDoubleQuote) {
-            if (j > 0) {
+        }
+	else if (input[i] == ' ' && !inSingleQuote && !inDoubleQuote)
+	{
+            if (j > 0)
+	    {
                 token[j] = '\0';
                 tokens[k++] = strdup(token);
                 j = 0;
             }
-        } else {
+        }
+	else
+	{
             token[j++] = input[i];
         }
         i++;
     }
-
-    if (j > 0) {
+    if (j > 0)
+    {
         token[j] = '\0';
-        if (inDoubleQuote) {
+        if (inDoubleQuote)
+	{
             char* expanded = expand_variables(token);
             strcpy(token, expanded);
             free(expanded);
         }
         tokens[k++] = strdup(token);
     }
-
     tokens[k] = NULL;
+    for (int l = 0; tokens[l] != NULL; l++)
+	    printf("tokens: %s\n", tokens[l]);
     free(token);
     return tokens;
 }
@@ -170,10 +250,11 @@ void builtin_echo(char** args) {
 
     for (int idx = 0; args[idx] != NULL; idx++)
     {
-        if(strcmp(args[idx], ">") == 0)
+        if(strcmp(args[idx], ">") == 0 || strcmp(args[idx], ">>") == 0)
+	{
 	    flag = 1;
-	if(strcmp(args[idx], ">>") == 0)
-	    flag = 1;
+	    break;
+	}
     }
     if (flag == 0) {
         if (args[1] && strcmp(args[1], "-n") == 0) {
@@ -184,10 +265,9 @@ void builtin_echo(char** args) {
             if (i > 1 + nFlag) {
                 printf(" ");
             }
-            printf("%s", args[i]);
         }
         if (!nFlag) {
-            printf("\n");
+            //printf("\n");
         }
     }
 }
@@ -205,7 +285,6 @@ void builtin_cd(char** args) {
 void builtin_pwd() {
     char cwd[1024];
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        //printf("%s\n", cwd);
 	return;
     } else {
         perror("pwd");
@@ -278,22 +357,30 @@ int handleBuiltins(char** args) {
 }
 
 // Execute a single command
-void executeCommand(char** command) {
+void executeCommand(char** command)
+{
     if (handleBuiltins(command) == -1) {
         return;
     }
     pid_t pid = fork();
-    if (pid == 0) {
-        if (handleRedirections(command) == -1) {
+    if (pid == 0)
+    {
+        if (handleRedirections(command) == -1)
+	{
             exit(EXIT_FAILURE);
         }
-        if (execvp(command[0], command) == -1)
+        if (execvp(command[0], command) == -1 && strcmp(command[0], "unset") != 0
+			&& strcmp(command[0], "export") != 0)
 	{
-	    //printf("%s\n", command[0]);
-            //perror("execvp failed");
+	    printf("%s\n", command[0]);
+            perror("execvp failed");
             exit(EXIT_FAILURE);
 	}
-    } else {
+	if (strcmp(command[0], "unset") == 0 || strcmp(command[0], "export") == 0)
+		exit(0);
+    }
+    else
+    {
         wait(NULL);
     }
 }
@@ -346,7 +433,9 @@ void executeSequence(char* input) {
             executePipe(leftCmd, rightCmd);
             free(leftCmd);
             free(rightCmd);
-        } else {
+        }
+	else
+	{
             char** cmd = tokenize(command);
             executeCommand(cmd);
             free(cmd);
