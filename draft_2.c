@@ -6,11 +6,11 @@
 /*   By: aadenan <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 11:08:06 by aadenan           #+#    #+#             */
-/*   Updated: 2024/05/30 18:45:10 by aadenan          ###   ########.fr       */
+/*   Updated: 2024/05/30 19:32:41 by aadenan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// Fix dem pipings!!!
+// Multiple piping fixed?
 // Might need to rethink about export & unset
 // Soon to be draft_bash v0.3
 
@@ -441,7 +441,44 @@ void executePipe(char** leftCmd, char** rightCmd) {
         }
     }
 }
-
+// Execute a sequence of commands
+void executeSequence(char* input)
+{
+    char* pipePos = strrchr(input, '|');
+    if (pipePos != NULL)
+    {
+        *pipePos = '\0';
+        executeSequence(input);
+        char** leftCmd = tokenize(input);
+        char** rightCmd = tokenize(pipePos + 1);
+        executePipe(leftCmd, rightCmd);
+        free(leftCmd);
+        free(rightCmd);
+    }
+}
+/*
+// Main function to execute a sequence of commands
+void executeSequence(char* input)
+{
+    char* pipePos = strrchr(input, '|');  // Search for the last occurrence of '|'
+    if (pipePos != NULL)
+    {
+        *pipePos = '\0';
+        char** leftCmd = tokenize(input);
+        char** rightCmd = tokenize(pipePos + 1);
+        executePipe(leftCmd, rightCmd);
+        free(leftCmd);
+        free(rightCmd);
+    }
+    else
+    {
+        char** cmd = tokenize(input);
+        executeCommand(cmd);
+        free(cmd);
+    }
+}
+*/
+/*
 // Execute a sequence of commands
 void executeSequence(char* input)
 {
@@ -467,7 +504,7 @@ void executeSequence(char* input)
         command = strtok(NULL, ";");
     }
 }
-
+*/
 void handle_sigint(int sig)
 {
 	printf("\n");
