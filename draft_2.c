@@ -6,11 +6,11 @@
 /*   By: aadenan <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 11:08:06 by aadenan           #+#    #+#             */
-/*   Updated: 2024/05/18 16:13:33 by aadenan          ###   ########.fr       */
+/*   Updated: 2024/05/30 18:45:10 by aadenan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// For reference
+// Fix dem pipings!!!
 // Might need to rethink about export & unset
 // Soon to be draft_bash v0.3
 
@@ -128,10 +128,14 @@ char** tokenize(char* input)
     char* token = malloc(strlen(input) + 1);
     char *tmp;
     int i = 0, j = 0, k = 0, m = 0;
-    int inSingleQuote = 0, inDoubleQuote = 0;
+    int inSingleQuote = 0, inDoubleQuote = 0, onlyDollar = 0;
 
     while (input[i] != '\0')
     {
+	if (input[i] == '$' && !inSingleQuote && !inDoubleQuote)
+	{
+    		onlyDollar = 1;
+	}
         if (input[i] == '\'' && !inDoubleQuote)
 	{
             inSingleQuote = !inSingleQuote;
@@ -157,6 +161,23 @@ char** tokenize(char* input)
                 j = 0;
             }
         }
+	else if ((!inSingleQuote && !inDoubleQuote && onlyDollar == 1) && (input[i] == ' '
+				|| input[i + 1] == '\0'))
+	{	
+    		if (token[j] == ' ')
+		{
+        		token[j] = '\0';
+		}
+    		else
+		{
+			token[j] = input[i];
+		}
+    		char *expanded = expand_variables(token);
+    		strcpy(token, expanded);
+    		free(expanded);
+    		j = strlen(token);
+    		onlyDollar = 0;
+	}
 	else
 	{
             token[j++] = input[i];
@@ -422,11 +443,14 @@ void executePipe(char** leftCmd, char** rightCmd) {
 }
 
 // Execute a sequence of commands
-void executeSequence(char* input) {
+void executeSequence(char* input)
+{
     char* command = strtok(input, ";");
-    while (command != NULL) {
+    while (command != NULL)
+    {
         char* pipePos = strchr(command, '|');
-        if (pipePos != NULL) {
+        if (pipePos != NULL)
+	{
             *pipePos = '\0';
             char** leftCmd = tokenize(command);
             char** rightCmd = tokenize(pipePos + 1);
