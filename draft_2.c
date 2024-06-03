@@ -6,14 +6,12 @@
 /*   By: aadenan <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 11:08:06 by aadenan           #+#    #+#             */
-/*   Updated: 2024/05/31 15:38:39 by aadenan          ###   ########.fr       */
+/*   Updated: 2024/06/03 17:10:50 by aadenan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// Fix 2 pipes with 1 redirection
-// Might need to rethink about export & unset
-// Soon to be draft_bash v0.3
 
+// Fix echo $?$?
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -377,70 +375,40 @@ int handleBuiltins(char** args) {
     return 0;
 }
 
-// Execute a single command
 void executeCommand(char** command)
 {
     if (handleBuiltins(command) == -1) {
         return;
     }
+    if (strcmp(command[0], "cd") == 0 || strcmp(command[0], "export") || strcmp(command[0], "unset"))
+        return;
     pid_t pid = fork();
+    if (pid < 0)
+    {
+        perror("fork failed");
+        return;
+    }
+
     if (pid == 0)
     {
         if (handleRedirections(command) == -1)
-	{
+        {
             exit(EXIT_FAILURE);
         }
-        if (execvp(command[0], command) == -1 && strcmp(command[0], "unset") != 0
-			&& strcmp(command[0], "export") != 0)
-	{
+        if (execvp(command[0], command) == -1)
+        {
             perror("execvp failed");
             exit(EXIT_FAILURE);
-	}
-	if (strcmp(command[0], "unset") == 0 || strcmp(command[0], "export") == 0)
-		exit(0);
+        }
     }
     else
     {
-        wait(NULL);
+        int status;
+        wait(&status);
+        // Optionally handle the status
     }
 }
-/*
-// Execute a piped command
-void executePipe(char** leftCmd, char** rightCmd) {
-    int pipefd[2];
-    pipe(pipefd);
-    pid_t pid = fork();
-    if (pid == 0) {
-        dup2(pipefd[1], STDOUT_FILENO);
-        close(pipefd[0]);
-        close(pipefd[1]);
-        if (handleRedirections(leftCmd) == -1) {
-            exit(EXIT_FAILURE);
-        }
-        execvp(leftCmd[0], leftCmd);
-        perror("execvp failed");
-        exit(EXIT_FAILURE);
-    } else {
-        pid_t pid2 = fork();
-        if (pid2 == 0) {
-            dup2(pipefd[0], STDIN_FILENO);
-            close(pipefd[0]);
-            close(pipefd[1]);
-            if (handleRedirections(rightCmd) == -1) {
-                exit(EXIT_FAILURE);
-            }
-            execvp(rightCmd[0], rightCmd);
-            perror("execvp failed");
-            exit(EXIT_FAILURE);
-        } else {
-            close(pipefd[0]);
-            close(pipefd[1]);
-            wait(NULL);
-            //wait(NULL);
-        }
-    }
-}
-*/
+
 void executePipe(char** leftCmd, char** rightCmd)
 {
     // Execute two commands connected by a single pipe
@@ -476,6 +444,7 @@ void executePipe(char** leftCmd, char** rightCmd)
     wait(NULL);
     wait(NULL);
 }
+
 // This function will need to handle the execution of multiple commands connected by pipes
 void executeMultiplePipes(char*** commands, int n)
 {
@@ -543,134 +512,45 @@ void executeMultiplePipes(char*** commands, int n)
         wait(NULL);
     }
 }
-/*
-// Execute a sequence of commands
-void executeSequence(char* input)
-{
-    char* command = strtok(input, ";");
-    while (command != NULL)
-    {
-        char* pipePos = strrchr(input, '|');
-        if (pipePos != NULL)
-        {
-            *pipePos = '\0';
-            executeSequence(input);
-            char** leftCmd = tokenize(input);
-            char** rightCmd = tokenize(pipePos + 1);
-            executePipe(leftCmd, rightCmd);
-            free(leftCmd);
-            free(rightCmd);
-        }
-        else
-        {
-	    char** cmd = tokenize(command);
-	    executeCommand(cmd);// executeCommand separately for string with pipes
-	    free(cmd);
-        }
-	command = strtok(NULL, ";");
+
+// Function to execute a sequence of commands, potentially with pipes
+void executeSequence(char* input) {
+    // Count number of pipes in the command
+    int pipeCount = 0;
+    for (char* temp = input; *temp != '\0'; temp++) {
+        if (*temp == '|') pipeCount++;
     }
 
-}
-*/
-/*
-// Main function to execute a sequence of commands
-void executeSequence(char* input)
-{
-    char* pipePos = strrchr(input, '|');  // Search for the last occurrence of '|'
-    if (pipePos != NULL)
-    {
-        *pipePos = '\0';
-        char** leftCmd = tokenize(input);
-        char** rightCmd = tokenize(pipePos + 1);
-        executePipe(leftCmd, rightCmd);
-        free(leftCmd);
-        free(rightCmd);
-    }
-    else
-    {
+    if (pipeCount > 0) {
+        // Tokenize command by pipes
+        char** commands = malloc((pipeCount + 2) * sizeof(char*));
+        int i = 0;
+        char* pipeToken = strtok(input, "|");
+        while (pipeToken != NULL) {
+            commands[i++] = pipeToken;
+            pipeToken = strtok(NULL, "|");
+        }
+        commands[i] = NULL; // Null-terminate the array
+
+        // Tokenize each command and store in a 2D array
+        char*** tokenizedCommands = malloc((pipeCount + 1) * sizeof(char**));
+        for (int j = 0; j <= pipeCount; j++) {
+            tokenizedCommands[j] = tokenize(commands[j]);
+        }
+
+        // Execute the sequence of commands with pipes
+        executeMultiplePipes(tokenizedCommands, pipeCount + 1);
+
+        // Free memory
+        for (int j = 0; j <= pipeCount; j++) {
+            free(tokenizedCommands[j]);
+        }
+        free(tokenizedCommands);
+        free(commands);
+    } else {
         char** cmd = tokenize(input);
         executeCommand(cmd);
         free(cmd);
-    }
-}
-*/
-/*
-// Execute a sequence of commands
-void executeSequence(char* input)
-{
-    char* command = strtok(input, ";");
-    while (command != NULL)
-    {
-        char* pipePos = strchr(command, '|');
-        if (pipePos != NULL)
-	{
-            *pipePos = '\0';
-            char** leftCmd = tokenize(command);
-            char** rightCmd = tokenize(pipePos + 1);
-            executePipe(leftCmd, rightCmd);
-            free(leftCmd);
-            free(rightCmd);
-        }
-	else
-	{
-            char** cmd = tokenize(command);
-            executeCommand(cmd);
-            free(cmd);
-        }
-        command = strtok(NULL, ";");
-    }
-}
-*/
-void executeSequence(char* input)
-{
-    char* command = strtok(input, ";");
-    while (command != NULL)
-    {
-        // Count number of pipes in the command
-        int pipeCount = 0;
-        for (char* temp = command; *temp != '\0'; temp++)
-        {
-            if (*temp == '|') pipeCount++;
-        }
-
-        if (pipeCount > 0)
-        {
-            // Tokenize command by pipes
-            char** commands = malloc((pipeCount + 2) * sizeof(char*));
-            int i = 0;
-            char* pipeToken = strtok(command, "|");
-            while (pipeToken != NULL)
-            {
-                commands[i++] = pipeToken;
-                pipeToken = strtok(NULL, "|");
-            }
-            commands[i] = NULL; // Null-terminate the array
-
-            // Tokenize each command and store in a 2D array
-            char*** tokenizedCommands = malloc((pipeCount + 1) * sizeof(char**));
-            for (int j = 0; j <= pipeCount; j++)
-            {
-                tokenizedCommands[j] = tokenize(commands[j]);
-            }
-
-            // Execute the sequence of commands with pipes
-            executeMultiplePipes(tokenizedCommands, pipeCount + 1);
-
-            // Free memory
-            for (int j = 0; j <= pipeCount; j++)
-            {
-                free(tokenizedCommands[j]);
-            }
-            free(tokenizedCommands);
-            free(commands);
-        }
-        else
-        {
-            char** cmd = tokenize(command);
-            executeCommand(cmd);
-            free(cmd);
-        }
-        command = strtok(NULL, ";");
     }
 }
 
@@ -678,6 +558,7 @@ void handle_sigint(int sig)
 {
 	printf("\n");
 	rl_on_new_line();
+	rl_replace_line("", 0);
 	rl_redisplay();
 }
 
@@ -693,8 +574,11 @@ int main() {
 		printf("exit\n");
 		break;
 	}
-	add_history(input);
-        executeSequence(input);
+	if (input[0] != '\0')
+	{
+		add_history(input);
+        	executeSequence(input);
+	}
 	free(input);
     }
     return 0;
