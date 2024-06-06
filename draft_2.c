@@ -6,12 +6,11 @@
 /*   By: aadenan <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 11:08:06 by aadenan           #+#    #+#             */
-/*   Updated: 2024/06/03 17:10:50 by aadenan          ###   ########.fr       */
+/*   Updated: 2024/06/06 19:03:22 by aadenan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-
-// Fix echo $?$?
+// SIGQUIT during heredoc("<<") does not work.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,11 +21,22 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <ctype.h>
-
+#define MAX_LINE 1024
 #define MAX_TOKENS 100
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+int exit_status = 0;
+
+void handle_sigint(int sig)
+{
+        exit_status = 130;
+        printf("\n");
+        rl_on_new_line();
+        rl_replace_line("", 0);
+        rl_redisplay();
+}
 
 char* expand_env_variable(const char* input) {
     // Maximum length of expanded string
@@ -201,7 +211,8 @@ char** tokenize(char* input)
 }
 
 // Handle redirections: >, >>, <, <<
-int handleRedirections(char** command) {
+int handleRedirections(char** command)
+{
     int fd;
     for (int i = 0; command[i] != NULL; i++) {
         if (strcmp(command[i], ">") == 0) {
@@ -231,25 +242,38 @@ int handleRedirections(char** command) {
             dup2(fd, STDIN_FILENO);
             close(fd);
             command[i] = NULL;
-        } else if (strcmp(command[i], "<<") == 0) {
+        }
+	else if (strcmp(command[i], "<<") == 0)
+	{
             char* endMarker = command[i + 1];
             char line[1024];
             int pipefd[2];
             pipe(pipefd);
 
-            if (fork() == 0) {
+            if (fork() == 0)
+	    {
                 close(pipefd[0]);
-                while (1) {
+                while (1)
+		{
                     printf("> ");
                     fgets(line, sizeof(line), stdin);
-                    if (strncmp(line, endMarker, strlen(endMarker)) == 0 && line[strlen(endMarker)] == '\n') {
+		    if (exit_status == 130)
+		    {
+			printf("Terminate heredoc\n");
+			break;
+		    }
+                    if (strncmp(line, endMarker, strlen(endMarker)) == 0
+				    && line[strlen(endMarker)] == '\n')
+		    {
                         break;
                     }
                     write(pipefd[1], line, strlen(line));
                 }
                 close(pipefd[1]);
                 exit(0);
-            } else {
+            }
+	    else
+	    {
                 close(pipefd[1]);
                 dup2(pipefd[0], STDIN_FILENO);
                 close(pipefd[0]);
@@ -260,7 +284,6 @@ int handleRedirections(char** command) {
     }
     return 0;
 }
-
 // Built-in command implementations
 void builtin_echo(char** args) {
     int flag = 0;
@@ -374,21 +397,21 @@ int handleBuiltins(char** args) {
     }
     return 0;
 }
-
 void executeCommand(char** command)
 {
     if (handleBuiltins(command) == -1) {
         return;
     }
-    if (strcmp(command[0], "cd") == 0 || strcmp(command[0], "export") || strcmp(command[0], "unset"))
+    if (strcmp(command[0], "cd") == 0 || strcmp(command[0], "export") == 0
+		    || strcmp(command[0], "unset") == 0)
         return;
     pid_t pid = fork();
     if (pid < 0)
     {
         perror("fork failed");
+	exit_status = -1;
         return;
     }
-
     if (pid == 0)
     {
         if (handleRedirections(command) == -1)
@@ -407,6 +430,7 @@ void executeCommand(char** command)
         wait(&status);
         // Optionally handle the status
     }
+    exit_status = 0;
 }
 
 void executePipe(char** leftCmd, char** rightCmd)
@@ -445,79 +469,115 @@ void executePipe(char** leftCmd, char** rightCmd)
     wait(NULL);
 }
 
-// This function will need to handle the execution of multiple commands connected by pipes
-void executeMultiplePipes(char*** commands, int n)
-{
+void executeMultiplePipes(char*** commands, int n) {
     int pipefds[2 * (n - 1)];
-    for (int i = 0; i < n - 1; i++)
-    {
-        if (pipe(pipefds + i * 2) < 0)
-        {
+    for (int i = 0; i < n - 1; i++) {
+        if (pipe(pipefds + i * 2) < 0) {
             perror("pipe");
             exit(EXIT_FAILURE);
         }
     }
 
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
         pid_t pid = fork();
-        if (pid == 0)
-        {
+        if (pid == 0) {
             // If not the first command, get input from previous pipe
-            if (i != 0)
-            {
-                if (dup2(pipefds[(i - 1) * 2], 0) < 0)
-                {
+            if (i != 0) {
+                if (dup2(pipefds[(i - 1) * 2], 0) < 0) {
                     perror("dup2");
                     exit(EXIT_FAILURE);
                 }
             }
 
             // If not the last command, output to next pipe
-            if (i != n - 1)
-            {
-                if (dup2(pipefds[i * 2 + 1], 1) < 0)
-                {
+            if (i != n - 1) {
+                if (dup2(pipefds[i * 2 + 1], 1) < 0) {
                     perror("dup2");
                     exit(EXIT_FAILURE);
                 }
             }
 
             // Close all pipe file descriptors
-            for (int j = 0; j < 2 * (n - 1); j++)
-            {
+            for (int j = 0; j < 2 * (n - 1); j++) {
                 close(pipefds[j]);
             }
 
+            // Handle redirections
+            if (handleRedirections(commands[i]) < 0) {
+                exit(EXIT_FAILURE); // Exit if redirection fails
+            }
+
+            // Execute the command
             execvp(commands[i][0], commands[i]);
             perror("execvp");
             exit(EXIT_FAILURE);
-        }
-        else if (pid < 0)
-        {
+        } else if (pid < 0) {
             perror("fork");
             exit(EXIT_FAILURE);
         }
     }
 
     // Close all pipe file descriptors in parent
-    for (int i = 0; i < 2 * (n - 1); i++)
-    {
+    for (int i = 0; i < 2 * (n - 1); i++) {
         close(pipefds[i]);
     }
 
     // Wait for all children to finish
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
         wait(NULL);
     }
 }
 
+static char *modify_input(char *input)
+{
+    char *new_input;
+    int i = 0;
+    int j = 0;
+    int len = 0;
+
+    while (input[i] != '\0')
+    {
+        if (input[i] == '>')
+	{
+	    if (input[i - 1] != ' ')
+	        len++;
+	    if (input[i + 1] != ' ')
+	        len++;
+	}
+	len++;
+        i++;
+    }
+    i = 0;
+    new_input = malloc(sizeof(char) * (len + 1));
+    while (input[i] != '\0')
+    {
+        if (input[i] == '>')
+	{
+            new_input[j] = ' ';
+	    new_input[j + 1] = '>';
+	    new_input[j + 2] = ' ';
+	    j = j + 3;
+	    i++;
+	}
+	else
+	{
+	    new_input[j] = input[i];
+	    i++;
+	    j++;
+	}
+    }
+    new_input[j] = '\0';
+    return (new_input);
+}
+
 // Function to execute a sequence of commands, potentially with pipes
-void executeSequence(char* input) {
+void executeSequence(char* input)
+{
+    char *corrected_input = modify_input(input);
+    printf("%s\n", corrected_input);
     // Count number of pipes in the command
     int pipeCount = 0;
-    for (char* temp = input; *temp != '\0'; temp++) {
+    for (char* temp = corrected_input; *temp != '\0'; temp++) {
         if (*temp == '|') pipeCount++;
     }
 
@@ -525,7 +585,7 @@ void executeSequence(char* input) {
         // Tokenize command by pipes
         char** commands = malloc((pipeCount + 2) * sizeof(char*));
         int i = 0;
-        char* pipeToken = strtok(input, "|");
+        char* pipeToken = strtok(corrected_input, "|");
         while (pipeToken != NULL) {
             commands[i++] = pipeToken;
             pipeToken = strtok(NULL, "|");
@@ -548,38 +608,82 @@ void executeSequence(char* input) {
         free(tokenizedCommands);
         free(commands);
     } else {
-        char** cmd = tokenize(input);
+        char** cmd = tokenize(corrected_input);
         executeCommand(cmd);
         free(cmd);
     }
+    free(corrected_input);
 }
 
-void handle_sigint(int sig)
+// Function to replace all occurrences of $? with the last exit status
+void replace_exit_status(char *cmd) {
+    char buffer[MAX_LINE];
+    char *pos;
+    char last_exit_str[10];
+    snprintf(last_exit_str, sizeof(last_exit_str), "%d", exit_status);
+
+    while ((pos = strstr(cmd, "$?")) != NULL) {
+        *pos = '\0';
+        snprintf(buffer, sizeof(buffer), "%s%s%s", cmd, last_exit_str, pos + 2);
+        strcpy(cmd, buffer);
+    }
+}
+
+static int check_input(char *input)
 {
-	printf("\n");
-	rl_on_new_line();
-	rl_replace_line("", 0);
-	rl_redisplay();
+    int i = 0;
+
+    while (input[i] != '\0')
+    {
+        while (input[i] == ' ')
+            i++;
+        if (input[i] == '|')
+        {
+            printf("bash error\n");
+            return (1);
+	}
+	else if (strstr(input, "env") != NULL)
+	{
+	    if (strcmp(input, "env") != 0)
+	    {
+	        printf("env error\n");
+	        add_history(input);
+	        return (1);
+	    }
+	    return (0);
+	}
+	else
+            return (0);
+    }
+    return (0);
 }
 
 // Main loop
-int main() {
+int main(void)
+{
+    int flag = 0;
     char *input;
+
     signal(SIGINT, handle_sigint);
     signal(SIGQUIT, SIG_IGN);
-    while (1) {
+    while (1)
+    {
         input = readline("Bash me up$: ");
 	if (input == NULL)
 	{
 		printf("exit\n");
 		break;
 	}
-	if (input[0] != '\0')
+        if (check_input(input) == 1)
+	    flag = 1;
+	if (input[0] != '\0' && flag == 0)
 	{
 		add_history(input);
+		replace_exit_status(input);
         	executeSequence(input);
 	}
 	free(input);
+	flag = 0;
     }
-    return 0;
+    return (0);
 }
