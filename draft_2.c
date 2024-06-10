@@ -6,11 +6,11 @@
 /*   By: aadenan <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 11:08:06 by aadenan           #+#    #+#             */
-/*   Updated: 2024/06/06 19:03:22 by aadenan          ###   ########.fr       */
+/*   Updated: 2024/06/10 19:45:36 by aadenan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// SIGQUIT during heredoc("<<") does not work.
+// SIGINT & SIGQUIT during heredoc("<<") does not work.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,14 +28,25 @@
 #include <string.h>
 
 int exit_status = 0;
+int in_heredoc = 0;
 
 void handle_sigint(int sig)
 {
-        exit_status = 130;
-        printf("\n");
-        rl_on_new_line();
-        rl_replace_line("", 0);
-        rl_redisplay();
+	if (in_heredoc == 0)
+	{
+            printf("\n");
+            rl_on_new_line();
+            rl_replace_line("", 0);
+            rl_redisplay();
+	}
+	if (in_heredoc == 1)
+	{
+		//rl_on_new_line();
+		//rl_replace_line("", 0);
+		//rl_redisplay();
+		exit(0);
+	}
+	exit_status = 130;
 }
 
 char* expand_env_variable(const char* input) {
@@ -160,7 +171,7 @@ char** tokenize(char* input)
                 j = strlen(token);
             }
         }
-	else if (input[i] == ' ' && !inSingleQuote && !inDoubleQuote)
+	else if (input[i] == ' ' && !inSingleQuote && !inDoubleQuote && onlyDollar == 0)
 	{
             if (j > 0)
 	    {
@@ -170,9 +181,9 @@ char** tokenize(char* input)
             }
         }
 	else if ((!inSingleQuote && !inDoubleQuote && onlyDollar == 1) && (input[i] == ' '
-				|| input[i + 1] == '\0'))
-	{	
-    		if (token[j] == ' ')
+				|| input[i + 1] == '\0' || input[i + 1] == ' '))
+	{
+		if (token[j] == ' ')
 		{
         		token[j] = '\0';
 		}
@@ -249,18 +260,25 @@ int handleRedirections(char** command)
             char line[1024];
             int pipefd[2];
             pipe(pipefd);
+	    in_heredoc = 1;
 
             if (fork() == 0)
 	    {
                 close(pipefd[0]);
                 while (1)
 		{
-                    printf("> ");
-                    fgets(line, sizeof(line), stdin);
 		    if (exit_status == 130)
 		    {
-			printf("Terminate heredoc\n");
-			break;
+			    printf("SIGINT received\n");
+			    in_heredoc = 0;
+			    break;
+		    }
+		    printf("> ");
+                    fgets(line, sizeof(line), stdin);
+		    if(feof(stdin))
+		    {
+			printf("\nCtrl + D pressed during heredoc\n");
+		        break;
 		    }
                     if (strncmp(line, endMarker, strlen(endMarker)) == 0
 				    && line[strlen(endMarker)] == '\n')
@@ -528,53 +546,121 @@ void executeMultiplePipes(char*** commands, int n) {
     }
 }
 
-static char *modify_input(char *input)
+static char *modify_input(const char *input)
 {
+    if (input == NULL) return NULL;
+
     char *new_input;
     int i = 0;
     int j = 0;
     int len = 0;
 
+    // Calculate the length of the new string
     while (input[i] != '\0')
     {
         if (input[i] == '>')
-	{
-	    if (input[i - 1] != ' ')
-	        len++;
-	    if (input[i + 1] != ' ')
-	        len++;
-	}
-	len++;
+        {
+            if (input[i] == '>' && input[i + 1] == '>')
+            {
+                if (i > 0 && input[i - 1] != ' ')
+                    len++;
+                len += 3; // Adding space for ' >> '
+                i++; // Skip the next '>'
+            }
+            else
+            {
+                if (input[i - 1] != ' ' && input[i + 1] != ' ')
+                    len += 3;
+            }
+        }
+        if (input[i] == '<')
+        {
+            if (input[i] == '<' && input[i + 1] == '<')
+            {
+                if (i > 0 && input[i - 1] != ' ')
+                    len++;
+                len += 3; // Adding space for ' << '
+                i++; // Skip the next '<'
+            }
+            else
+            {
+                if (input[i - 1] != ' ' && input[i + 1] != ' ')
+                    len += 3;
+            }
+        }
+        else
+        {
+            len++;
+        }
         i++;
     }
+
+    new_input = (char *)malloc(sizeof(char) * (len + 1));
+    if (new_input == NULL)
+        return NULL; // Check for malloc failure
+
     i = 0;
-    new_input = malloc(sizeof(char) * (len + 1));
+
+    // Construct the new string
     while (input[i] != '\0')
     {
-        if (input[i] == '>')
-	{
-            new_input[j] = ' ';
-	    new_input[j + 1] = '>';
-	    new_input[j + 2] = ' ';
-	    j = j + 3;
-	    i++;
-	}
-	else
-	{
-	    new_input[j] = input[i];
-	    i++;
-	    j++;
-	}
+        if (input[i] == '>' && input[i - 1] != ' ' && input[i + 1] != ' ')
+        {
+            if (i > 0 && input[i - 1] != ' ')
+                new_input[j++] = ' ';
+            new_input[j++] = '>';
+            if (input[i + 1] == '>')
+            {
+                new_input[j++] = '>';
+                i++;
+                if (input[i + 1] != '\0' && input[i + 1] != ' ')
+                    new_input[j++] = ' ';
+            }
+            else
+            {
+                if (input[i + 1] != '\0' && input[i + 1] != ' ')
+                {
+                    new_input[j++] = ' ';
+                }
+            }
+            i++;
+        }
+        else if (input[i] == '<' && input[i - 1] != ' ' && input[i + 1] != ' ')
+        {
+            if (i > 0 && input[i - 1] != ' ')
+                new_input[j++] = ' ';
+            new_input[j++] = '<';
+            if (input[i + 1] == '<')
+            {
+                new_input[j++] = '<';
+                i++;
+                if (input[i + 1] != '\0' && input[i + 1] != ' ')
+                    new_input[j++] = ' ';
+            }
+            else
+            {
+                if (input[i + 1] != '\0' && input[i + 1] != ' ')
+                {
+                    new_input[j++] = ' ';
+                }
+            }
+            i++;
+        }
+        else
+        {
+            new_input[j++] = input[i++];
+        }
     }
     new_input[j] = '\0';
-    return (new_input);
+
+    return new_input;
 }
 
 // Function to execute a sequence of commands, potentially with pipes
 void executeSequence(char* input)
 {
     char *corrected_input = modify_input(input);
-    printf("%s\n", corrected_input);
+    printf("Corrected input: %s\n", corrected_input);
     // Count number of pipes in the command
     int pipeCount = 0;
     for (char* temp = corrected_input; *temp != '\0'; temp++) {
@@ -633,6 +719,10 @@ static int check_input(char *input)
 {
     int i = 0;
 
+    if ((input[0] == '"' && input[1] == '"') || (input[0] == '\'' && input[1] == '\''))
+	    return 1;
+    if ((input[0] == '"' && input[1] == '\0') || (input[0] == '\'' && input[1] == '\0'))
+	    return 1;
     while (input[i] != '\0')
     {
         while (input[i] == ' ')
