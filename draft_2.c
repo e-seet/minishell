@@ -6,11 +6,12 @@
 /*   By: aadenan <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 11:08:06 by aadenan           #+#    #+#             */
-/*   Updated: 2024/06/10 19:45:36 by aadenan          ###   ########.fr       */
+/*   Updated: 2024/06/11 16:24:06 by aadenan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// SIGINT & SIGQUIT during heredoc("<<") does not work.
+// SIGINT during heredoc("<<") does not work correctly.
+// fork issue for ("<<")?
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,9 +24,6 @@
 #include <ctype.h>
 #define MAX_LINE 1024
 #define MAX_TOKENS 100
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 int exit_status = 0;
 int in_heredoc = 0;
@@ -34,17 +32,16 @@ void handle_sigint(int sig)
 {
 	if (in_heredoc == 0)
 	{
+	    printf("Flag 0");
             printf("\n");
             rl_on_new_line();
             rl_replace_line("", 0);
             rl_redisplay();
 	}
-	if (in_heredoc == 1)
+	else
 	{
-		//rl_on_new_line();
-		//rl_replace_line("", 0);
-		//rl_redisplay();
-		exit(0);
+	    printf("Flag 1");
+	    exit(0);
 	}
 	exit_status = 130;
 }
@@ -267,12 +264,6 @@ int handleRedirections(char** command)
                 close(pipefd[0]);
                 while (1)
 		{
-		    if (exit_status == 130)
-		    {
-			    printf("SIGINT received\n");
-			    in_heredoc = 0;
-			    break;
-		    }
 		    printf("> ");
                     fgets(line, sizeof(line), stdin);
 		    if(feof(stdin))
@@ -296,6 +287,7 @@ int handleRedirections(char** command)
                 dup2(pipefd[0], STDIN_FILENO);
                 close(pipefd[0]);
                 wait(NULL);
+		signal(SIGINT, SIG_DFL);
             }
             command[i] = NULL;
         }
