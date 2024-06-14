@@ -6,7 +6,7 @@
 /*   By: aadenan <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 11:08:06 by aadenan           #+#    #+#             */
-/*   Updated: 2024/06/11 16:24:06 by aadenan          ###   ########.fr       */
+/*   Updated: 2024/06/14 15:00:02 by aadenan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,23 +27,25 @@
 
 int exit_status = 0;
 int in_heredoc = 0;
+int sigint_flag = 0;
 
-void handle_sigint(int sig)
+void default_sigint(int sig)
 {
-	if (in_heredoc == 0)
-	{
-	    printf("Flag 0");
+	if (in_heredoc == 0) {
             printf("\n");
             rl_on_new_line();
             rl_replace_line("", 0);
             rl_redisplay();
 	}
-	else
-	{
-	    printf("Flag 1");
-	    exit(0);
-	}
+	in_heredoc = 0;
 	exit_status = 130;
+}
+
+void heredoc_sigint(int sig)
+{
+	printf("\nSIGINT in heredoc\n");
+	sigint_flag = 1;
+	in_heredoc = 0;
 }
 
 char* expand_env_variable(const char* input) {
@@ -261,11 +263,18 @@ int handleRedirections(char** command)
 
             if (fork() == 0)
 	    {
+		printf("Children process...\n");
+		signal(SIGINT, heredoc_sigint);
                 close(pipefd[0]);
                 while (1)
 		{
 		    printf("> ");
                     fgets(line, sizeof(line), stdin);
+		    if (sigint_flag == 1)
+		    {
+		        close(pipefd[1]);
+			exit(0);
+		    }
 		    if(feof(stdin))
 		    {
 			printf("\nCtrl + D pressed during heredoc\n");
@@ -283,10 +292,12 @@ int handleRedirections(char** command)
             }
 	    else
 	    {
+		wait(NULL);
+		printf("Parent process...\n");
                 close(pipefd[1]);
                 dup2(pipefd[0], STDIN_FILENO);
                 close(pipefd[0]);
-                wait(NULL);
+                //wait(NULL);
 		signal(SIGINT, SIG_DFL);
             }
             command[i] = NULL;
@@ -746,14 +757,14 @@ int main(void)
     int flag = 0;
     char *input;
 
-    signal(SIGINT, handle_sigint);
+    signal(SIGINT, default_sigint);
     signal(SIGQUIT, SIG_IGN);
     while (1)
     {
         input = readline("Bash me up$: ");
 	if (input == NULL)
 	{
-		printf("exit\n");
+		printf("Ctrl + D pressed outside heredoc\n");
 		break;
 	}
         if (check_input(input) == 1)
